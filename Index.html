@@ -1,0 +1,128 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Year 8 &amp; 9 Practice Portal</title>
+<style>
+:root{--bg:#fbf6ea;--cd:#fff;--tx:#23221f;--mu:#6b6558;--pr:#0f6b5c;--on:#fff;--ok:#12703a;--bad:#b3261e;--bd:#e4dbc6;--ac:#f2b544;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15201d;--cd:#1e2c28;--tx:#f1efe6;--mu:#a9b5ad;--pr:#5cd0b5;--on:#0c1b17;--ok:#6fdc97;--bad:#ff8f86;--bd:#31443e;--ac:#f2b544}}
+:root[data-theme="dark"]{--bg:#15201d;--cd:#1e2c28;--tx:#f1efe6;--mu:#a9b5ad;--pr:#5cd0b5;--on:#0c1b17;--ok:#6fdc97;--bad:#ff8f86;--bd:#31443e;--ac:#f2b544}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font:800 clamp(1.7rem,6vw,2.5rem)/1.1 Georgia,"Times New Roman",serif;margin:.4em 0}h2{font-size:1.1rem;margin:1em 0 .4em}h3{font-size:1rem;margin:.8em 0 .3em}
+nav{display:flex;gap:8px;justify-content:flex-end;padding:8px 16px 0;max-width:760px;margin:0 auto}
+.card{background:var(--cd);border:2px solid var(--bd);border-radius:16px;padding:18px}
+label{display:block;font-weight:700;margin:10px 0}
+input,select{width:100%;font:inherit;padding:11px 12px;margin-top:5px;border:2px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+button{font:inherit;font-weight:700;padding:10px 16px;border:0;border-radius:10px;background:var(--pr);color:var(--on);cursor:pointer;margin:6px 6px 0 0}
+button.g{background:transparent;color:var(--pr);border:2px solid var(--pr)}button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:var(--bg);color:var(--tx);border:2px solid var(--bd);margin:0;text-align:left}
+.chip.on{border-color:var(--pr);background:var(--pr);color:var(--on)}.chip small{display:block;font-weight:400}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.meta span{background:var(--cd);border:2px solid var(--bd);border-radius:99px;padding:2px 12px;font-size:.9rem}
+.mu{color:var(--mu)}.q{font-size:1.25rem;font-weight:700}.err{color:var(--bad);min-height:1.4em;font-weight:700}
+.fb{font-weight:800;font-size:1.15rem}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.pn{border-left:6px solid var(--ac);background:var(--bg);padding:6px 14px;margin-top:12px;border-radius:0 10px 10px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}.stats div{background:var(--cd);border:2px solid var(--bd);border-radius:12px;padding:10px}.stats b{display:block;font-size:1.5rem}
+.big{background:var(--ac)!important;color:#23221f}.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+.bars{display:flex;align-items:flex-end;gap:6px;height:90px}.bars i{flex:1;background:var(--pr);border-radius:4px 4px 0 0;min-height:3px}
+.cf{position:fixed;top:-2rem;font-size:1.6rem;pointer-events:none;animation:fall 1.8s ease-in forwards}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.cf{display:none}}
+</style></head><body><nav id="nv"></nav><main id="app"></main>
+<script>
+"use strict";
+/* ---------- Storage layer (swap these two functions for a backend later) ---------- */
+const KEY='y8_10_portal_v1';let D={tests:[],last:''};
+try{Object.assign(D,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};
+/* ---------- Helpers ---------- */
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PUP=[1,2,4,5],DIFF=['Easy','Moderate','Difficult','Very Difficult'];
+const SUBJ=['Maths','Additional Maths','Physics','Chemistry','English','Spanish','French'];
+function rng(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19}let a=h;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let R=Math.random;const r=(a,b)=>a+Math.floor(R()*(b-a+1));
+const Q=(q,a,m,w,alt)=>({q,a,m,w,alt});
+const nums=(k,lo,hi)=>{const n=Array.from({length:k},()=>r(lo,hi));n[k-1]+=(k-n.reduce((s,x)=>s+x,0)%k)%k;return n};
+const sup=(b,n)=>`${b}<sup>${n}</sup>`;
+/* ---------- Question bank: BANK[subject][topic] = [easy, moderate, difficult, very difficult] generators.
+   Each generator is seeded, so every (topic, difficulty) has 10 repeatable test sets. Add subjects/topics here. ---------- */
+const BANK={Maths:{
+'Fractions, decimals & percentages':[
+()=>{const p=[10,20,25,50][r(0,3)],n=r(2,20)*10,a=n*p/100;return Q(`Find ${p}% of ${n}.`,a,`Write the percentage as a fraction out of 100, then multiply by the amount.`,`${n} × ${p}/100 = ${a}`)},
+()=>{const b=[4,5,8,20][r(0,3)],a=r(1,b-1);return Q(`Write ${a}/${b} as a decimal.`,a/b,`A fraction means "top ÷ bottom". Divide the numerator by the denominator.`,`${a} ÷ ${b} = ${a/b}`)},
+()=>{const P=r(2,20)*10,p=[15,30,45][r(0,2)],a=P*(100+p)/100;return Q(`A £${P} coat increases in price by ${p}%. What is the new price in £?`,a,`Work out the increase, then add it on. Or multiply by 1 + percentage/100.`,`${P} × ${(100+p)/100} = ${a}`)},
+()=>{const o=r(2,12)*25,c=o*4/5;return Q(`In a sale all prices are reduced by 20%. A jacket now costs £${c}. What was its original price in £?`,o,`The sale price is 80% of the original, so divide by 0.8 (not add 20%).`,`${c} ÷ 0.8 = ${o}`)}],
+'Indices':[
+()=>{const b=r(2,5),n=r(2,4);return Q(`Work out ${sup(b,n)}.`,b**n,`A power means repeated multiplication: the index says how many times the base is used.`,`${Array(n).fill(b).join(' × ')} = ${b**n}`)},
+()=>{const b=r(2,9),a=r(2,7),c=r(2,7);return Q(`${sup(b,a)} × ${sup(b,c)} = ${sup(b,'n')}. Find n.`,a+c,`When you multiply powers of the same base, add the indices.`,`${a} + ${c} = ${a+c}`)},
+()=>{const b=r(2,3),a=r(2,3);return Q(`Work out (${sup(b,a)})<sup>2</sup>.`,b**(2*a),`A power of a power: multiply the indices, then work out the value.`,`${b}^(${a}×2) = ${b}^${2*a} = ${b**(2*a)}`)},
+()=>{const b=r(2,9),p=r(3,6),q=r(2,5),s=r(1,4);return Q(`${sup(b,'n')} = ${sup(b,p)} × ${sup(b,q)} ÷ ${sup(b,s)}. Find n.`,p+q-s,`Add the indices when multiplying and subtract when dividing.`,`${p} + ${q} − ${s} = ${p+q-s}`)}],
+'Expressions & formulae':[
+()=>{const a=r(2,9),b=r(2,9);return Q(`Simplify ${a}x + ${b}x.`,`${a+b}x`,`Like terms (both with x) can be combined by adding the numbers in front.`,`${a}x + ${b}x = ${a+b}x`)},
+()=>{const a=r(2,9),b=r(2,9);return Q(`Expand ${a}(x + ${b}).`,`${a}x+${a*b}`,`Multiply every term inside the bracket by the number outside.`,`${a}×x + ${a}×${b} = ${a}x + ${a*b}`,[`${a*b}+${a}x`])},
+()=>{const a=r(2,5),b=r(1,6),c=r(1,9),x=r(2,5);return Q(`Work out ${a}x² + ${b}x − ${c} when x = ${x}.`,a*x*x+b*x-c,`Replace x with the number. Do the square first, then multiply, then add and subtract.`,`${a}×${x*x} + ${b*x} − ${c} = ${a*x*x+b*x-c}`)},
+()=>{const u=r(2,9),t=r(2,6),a=r(2,8),v=u+a*t;return Q(`The formula v = u + at is used in science. Find a when v = ${v}, u = ${u} and t = ${t}.`,a,`Rearrange to make a the subject: subtract u, then divide by t.`,`a = (v − u) ÷ t = (${v} − ${u}) ÷ ${t} = ${a}`)}],
+'Solving equations':[
+()=>{const x=r(2,15),a=r(2,12);return Q(`Solve x + ${a} = ${x+a}.`,x,`Do the inverse operation to both sides to get x on its own.`,`x = ${x+a} − ${a} = ${x}`)},
+()=>{const x=r(2,9),a=r(2,6),b=r(1,9);return Q(`Solve ${a}x + ${b} = ${a*x+b}.`,x,`Undo the addition first, then undo the multiplication.`,`${a}x = ${a*x}, so x = ${x}`)},
+()=>{const a=r(4,8),c=r(1,3),b=r(1,9),x=r(2,9),d=(a-c)*x+b;return Q(`Solve ${a}x + ${b} = ${c}x + ${d}.`,x,`Collect the x terms on one side and the numbers on the other.`,`${a-c}x = ${d-b}, so x = ${x}`)},
+()=>{const a=r(2,6),b=r(1,4),x=r(5,14);return Q(`Solve ${a}(x − ${b}) = ${a*(x-b)}.`,x,`Divide both sides by ${a} first (or expand the bracket), then solve.`,`x − ${b} = ${x-b}, so x = ${x}`)}],
+'Linear graphs':[
+()=>{const m=r(2,9),c=r(1,9);return Q(`What is the gradient of the line y = ${m}x + ${c}?`,m,`In y = mx + c, the number in front of x is the gradient.`,`m = ${m}`)},
+()=>{const m=r(2,6),c=r(1,9),x=r(2,7);return Q(`A line has equation y = ${m}x + ${c}. Find y when x = ${x}.`,m*x+c,`Substitute the x value into the equation.`,`y = ${m}×${x} + ${c} = ${m*x+c}`)},
+()=>{const m=r(2,5),x1=r(0,3),y1=r(0,5),dx=r(2,4);return Q(`Find the gradient of the line through (${x1}, ${y1}) and (${x1+dx}, ${y1+m*dx}).`,m,`Gradient = change in y ÷ change in x.`,`${m*dx} ÷ ${dx} = ${m}`)},
+()=>{const m=r(2,4),x=r(1,6);return Q(`At what value of x does the line y = ${m}x − ${m*x} cross the x-axis?`,x,`On the x-axis y = 0, so set y = 0 and solve for x.`,`0 = ${m}x − ${m*x} → x = ${x}`)}],
+'Angle properties':[
+()=>{const a=r(20,150);return Q(`Angles on a straight line add up to 180°. One angle is ${a}°. Find the other angle.`,180-a,`Angles on a straight line sum to 180°.`,`180 − ${a} = ${180-a}°`)},
+()=>{const a=r(30,80),b=r(30,80);return Q(`Two angles in a triangle are ${a}° and ${b}°. Find the third angle.`,180-a-b,`The angles in a triangle sum to 180°.`,`180 − ${a} − ${b} = ${180-a-b}°`)},
+()=>{const n=r(5,10);return Q(`What is the sum of the interior angles of a polygon with ${n} sides?`,(n-2)*180,`Sum = (n − 2) × 180°.`,`(${n} − 2) × 180 = ${(n-2)*180}°`)},
+()=>{const n=[5,6,8,9,10,12][r(0,5)];return Q(`Find one interior angle of a regular polygon with ${n} sides (in degrees).`,(n-2)*180/n,`Find the total interior angle sum, then divide by the number of equal angles.`,`(${n} − 2) × 180 ÷ ${n} = ${(n-2)*180/n}°`)}],
+'Volume & surface area':[
+()=>{const l=r(2,9),w=r(2,9),h=r(2,9);return Q(`Find the volume of a cuboid ${l} cm by ${w} cm by ${h} cm (in cm³).`,l*w*h,`Volume of a cuboid = length × width × height.`,`${l} × ${w} × ${h} = ${l*w*h} cm³`)},
+()=>{const l=r(2,8),w=r(2,8),h=r(2,8);return Q(`Find the surface area of a cuboid ${l} cm by ${w} cm by ${h} cm (in cm²).`,2*(l*w+l*h+w*h),`Add the areas of the 3 different pairs of faces, then double.`,`2 × (${l*w} + ${l*h} + ${w*h}) = ${2*(l*w+l*h+w*h)} cm²`)},
+()=>{const b=2*r(1,4),h=r(3,6),l=r(4,9);return Q(`A triangular prism has a triangle of base ${b} cm and height ${h} cm, and length ${l} cm. Find its volume (cm³).`,b*h/2*l,`Volume of a prism = cross-section area × length.`,`(½ × ${b} × ${h}) × ${l} = ${b*h/2*l} cm³`)},
+()=>{const s=r(2,9);return Q(`A cube has a total surface area of ${6*s*s} cm². Find the length of one edge (cm).`,s,`A cube has 6 identical square faces. Divide by 6, then square root.`,`${6*s*s} ÷ 6 = ${s*s}, √${s*s} = ${s}`)}],
+'Statistics & probability':[
+()=>{const n=nums(4,3,15);return Q(`Find the mean of ${n.join(', ')}.`,n.reduce((s,x)=>s+x)/4,`Mean = total ÷ how many values.`,`${n.join(' + ')} = ${n.reduce((s,x)=>s+x)}, ÷ 4 = ${n.reduce((s,x)=>s+x)/4}`)},
+()=>{const n=Array.from({length:5},()=>r(1,30)),m=[...n].sort((a,b)=>a-b)[2];return Q(`Find the median of ${n.join(', ')}.`,m,`Put the numbers in order, then pick the middle one.`,`Ordered: ${[...n].sort((a,b)=>a-b).join(', ')}. Median = ${m}`)},
+()=>{const R1=r(2,6),B=r(2,6),G=r(1,5),t=R1+B+G;return Q(`A bag holds ${R1} red, ${B} blue and ${G} green counters. What is the probability of picking a red one? (Fraction or decimal.)`,R1/t,`Probability = number of favourable outcomes ÷ total outcomes.`,`${R1}/${t} ≈ ${(R1/t).toFixed(3)}`)},
+()=>{const n=nums(5,3,20),m=n.reduce((s,x)=>s+x)/5;return Q(`The mean of 5 numbers is ${m}. Four of them are ${n.slice(0,4).join(', ')}. Find the fifth number.`,n[4],`Total of all 5 = mean × 5. Subtract the four known numbers.`,`${m} × 5 = ${m*5}; ${m*5} − ${n.slice(0,4).reduce((s,x)=>s+x)} = ${n[4]}`)}]
+}};
+/* ---------- Answer validation ---------- */
+const num=s=>{s=String(s).toLowerCase().replace(/[°%£\s,]|cm|units?|degrees?|²|³/g,'').replace(/^[a-z]=/,'').replace(/^−/,'-');const m=s.match(/^(-?\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);return m?m[1]/m[2]:/^-?\d*\.?\d+$/.test(s)?+s:NaN};
+const norm=s=>String(s).toLowerCase().replace(/[\s*]/g,'').replace(/²/g,'^2').replace(/^[a-z]=/,'');
+const check=(q,v)=>typeof q.a==='number'?Math.abs(num(v)-q.a)<0.005:[q.a,...(q.alt||[])].some(x=>norm(x)===norm(v));
+/* ---------- State ---------- */
+let S={v:'home',name:D.last,subj:'',diff:-1,topic:'',t:null};
+const mine=()=>D.tests.filter(t=>t.student.toLowerCase()===S.name.toLowerCase());
+function cheer(){try{const c=new(window.AudioContext||window.webkitAudioContext)(),n=c.sampleRate,b=c.createBuffer(1,n,n),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(Math.random()<.02?1:.15)*(1-i/n);const s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start();[523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.12;o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.start(t);o.stop(t+.3)})}catch(e){}
+for(let i=0;i<28;i++){const e=document.createElement('span');e.className='cf';e.textContent=['🐶','🎉','👏','⭐'][i%4];e.style.left=Math.random()*100+'vw';e.style.animationDelay=Math.random()*.4+'s';document.body.append(e);setTimeout(()=>e.remove(),2300)}}
+/* ---------- Views ---------- */
+const V={
+home:()=>`<h1>Year 8 &amp; 9 Practice Portal</h1><p class=mu>Type your answers, earn Puppies 🐶 and watch your total grow.</p><div class=card><label>Student Name<input id=nm value="${esc(S.name)}" placeholder="e.g. Smithy" autocomplete=off></label><label>Subject<select id=sb><option value="">Choose a subject…</option>${SUBJ.map(s=>`<option ${s==S.subj?'selected':''}>${s}</option>`).join('')}</select></label><p class=err id=er></p><button data-a=go>Continue</button></div>`,
+subj:()=>{const tp=Object.keys(BANK[S.subj]||{}),ready=S.diff>=0&&S.topic;return `<h1>${S.subj} Practice</h1><p class=mu>Student: ${esc(S.name)}</p><div class=card><h2>Difficulty</h2><div class=chips>${DIFF.map((d,i)=>`<button class="chip ${S.diff==i?'on':''}" data-a=diff data-v=${i}>${d}<small>🐶 ${PUP[i]} ${PUP[i]>1?'Puppies':'Puppy'} per correct answer</small></button>`).join('')}</div><h2>Topic</h2>${tp.length?`<div class=chips>${tp.concat('Mixed').map(t=>`<button class="chip ${S.topic==t?'on':''}" data-a=top data-v="${esc(t)}">${t=='Mixed'?'Mixed topics (all)':t}</button>`).join('')}</div>`:`<p>${S.subj} questions aren't loaded yet. Add topics to the question bank to switch this subject on.</p>`}<button data-a=start ${ready?'':'disabled'}>Start test</button><button class=g data-a=home>Change subject</button></div>`},
+test:()=>{const t=S.t,q=t.qs[t.i];return `<p><b>${esc(t.id)}</b> <span class=mu>(Set ${t.setNo} of 10)</span></p><div class=meta><span>Question ${t.i+1} of 10</span><span>${DIFF[S.diff]}</span><span>${esc(q.topic)}</span><span>🐶 ${t.pup} earned</span><span>${t.qs.filter(x=>!x.done).length} left</span></div><div class=card><h2>Question</h2><p class=q>${q.q}</p><h3>Your Answer</h3><input id=ans value="${esc(q.last||'')}" ${q.done?'disabled':''} placeholder="Type your answer" autocomplete=off><div><button data-a=chk ${q.done?'disabled':''}>Check Answer</button><button class=g data-a=exp>Explain</button><button class=g data-a=cor>Correction</button></div>${q.fb?`<p class="fb ${q.ok?'ok':'bad'}" role=status>${q.fb}</p>`:''}${q.showEx?`<div class=pn><h3>Explain</h3><p>${q.m}</p></div>`:''}${q.showCor?`<div class=pn><h3>Correction</h3><p><b>Correct answer:</b> ${esc(q.a)}</p><p><b>Method:</b> ${q.m}</p><p><b>Working:</b> ${q.w}</p><p><b>Your answer:</b> ${q.ok?'Correct.':q.last?`You wrote "${esc(q.last)}", which doesn't match ${esc(q.a)}. Compare it with the working above.`:'You did not enter an answer.'}</p><p class=mu>No Puppies are awarded for using Correction.</p></div>`:''}${q.done?`<button data-a=next>${t.i==9?'Finish test':'Next question'} →</button>`:''}</div>`},
+done:()=>{const t=S.t.rec;return `<h1>Test Complete! 🎉</h1><div class=card><p><b>Student:</b> ${esc(t.student)}<br><b>Subject:</b> ${t.subject}<br><b>Topic:</b> ${t.topic=='Mixed'?'Mixed topics':t.topic}<br><b>Difficulty:</b> ${DIFF[t.diff]}<br><b>Test Number:</b> ${esc(t.id)}<br><b>Date:</b> ${new Date(t.date).toLocaleDateString('en-GB')}</p><p><b>Correct:</b> ${t.correct} / 10<br><b>Incorrect:</b> ${10-t.correct} / 10</p><p class=q>Total Puppies: ${t.puppies} 🐶</p><button data-a=again>New test</button><button class=g data-a=dash>Dashboard</button></div>`},
+dash:()=>{const T=mine().slice().reverse(),P=T.reduce((s,t)=>s+t.puppies,0),C=T.reduce((s,t)=>s+t.correct,0),N=T.length*10,by={};T.forEach(t=>by[t.subject]=(by[t.subject]||0)+t.puppies);const rec=T.slice(0,10).reverse(),mx=Math.max(1,...rec.map(t=>t.puppies));
+return `<h1>${esc(S.name)}'s Dashboard</h1><div class=stats><div class=big><span>🐶 Total Puppies</span><b>${P}</b></div><div><span>Tests completed</span><b>${T.length}</b></div><div><span>Questions answered</span><b>${N}</b></div><div><span>Correct answers</span><b>${C}</b></div><div><span>Accuracy</span><b>${N?Math.round(C/N*100):0}%</b></div></div>
+<div class=card><h2>Puppies by subject</h2>${Object.keys(by).length?Object.entries(by).map(([k,v])=>`<p>${k}: <b>${v} 🐶</b></p>`).join(''):'<p class=mu>Complete a test to start earning Puppies.</p>'}<h2>Puppies per recent test</h2><div class=bars>${rec.map(t=>`<i title="${esc(t.id)}: ${t.puppies}" style="height:${t.puppies/mx*100}%"></i>`).join('')}</div></div>
+<h2>Recent tests</h2><div class=wrap><table><tr><th>Date<th>Test Number<th>Subject<th>Topic<th>Difficulty<th>Correct<th>Puppies</tr>${T.map(t=>`<tr><td>${new Date(t.date).toLocaleDateString('en-GB')}<td>${esc(t.id)}<td>${t.subject}<td>${t.topic}<td>${DIFF[t.diff]}<td>${t.correct}/10<td>${t.puppies} 🐶</tr>`).join('')||'<tr><td colspan=7>No tests yet.</tr>'}</table></div>`}};
+function render(){$('#nv').innerHTML=S.name&&S.v!='home'?`<button class=g data-a=home>Home</button><button class=g data-a=dash>Dashboard</button>`:S.name?`<button class=g data-a=dash>Dashboard</button>`:'';$('#app').innerHTML=V[S.v]();const i=$('#ans');if(i&&!i.disabled)i.focus();window.scrollTo(0,0)}
+const cap=()=>{const i=$('#ans'),q=S.t.qs[S.t.i];if(i&&!q.done)q.last=i.value.trim();return q};
+const A={
+home(){S.v='home';render()},dash(){S.v='dash';render()},
+go(){const n=$('#nm').value.trim(),s=$('#sb').value;if(!n||!s){$('#er').textContent=!n?'Enter your name to continue.':'Select a subject to continue.';return}S.name=n;D.last=n;save();S.subj=s;S.diff=-1;S.topic='';S.v='subj';render()},
+diff(v){S.diff=+v;render()},top(v){S.topic=v;render()},
+start(){const tp=S.topic,key=[S.name.toLowerCase(),S.subj,tp,S.diff].join('|'),setNo=D.tests.filter(t=>t.key==key).length%10+1;R=rng(`${S.subj}|${tp}|${S.diff}|${setNo}`);const B=BANK[S.subj],names=tp=='Mixed'?Object.keys(B):[tp],qs=[],seen=new Set;
+for(let i=0;i<10;i++){const nm=names[i%names.length];let q,g=0;do q=B[nm][S.diff]();while(seen.has(q.q)&&++g<30);seen.add(q.q);qs.push({...q,topic:nm,last:'',ok:false,done:false,pts:0})}
+const num=Math.max(0,...D.tests.filter(t=>t.student.toLowerCase()==S.name.toLowerCase()&&t.subject==S.subj).map(t=>t.num))+1;
+S.t={i:0,qs,num,setNo,key,pup:0,id:`${S.name} - ${S.subj} - ${String(num).padStart(4,'0')}`};S.v='test';render()},
+chk(){const q=cap();if(q.done)return;if(!q.last){q.fb='Type an answer first, then press Check Answer.';q.ok=false;render();return}
+if(check(q,q.last)){q.ok=q.done=true;q.pts=PUP[S.diff];S.t.pup+=q.pts;q.fb=`Correct! 🎉 +${q.pts} ${q.pts>1?'Puppies':'Puppy'} 🐶`;cheer()}else q.fb='Incorrect. Try again, or press Correction to see the answer.';render()},
+exp(){const q=cap();q.showEx=!q.showEx;render()},
+cor(){const q=cap();q.showCor=true;if(!q.ok){q.done=true;q.fb='Answer revealed. No Puppies awarded for this question.'}render()},
+next(){const t=S.t;if(t.i<9){t.i++;render();return}
+const rec={id:t.id,num:t.num,key:t.key,student:S.name,subject:S.subj,topic:S.topic,diff:S.diff,setNo:t.setNo,date:new Date().toISOString(),correct:t.qs.filter(q=>q.ok).length,puppies:t.pup,questions:t.qs.map(q=>({topic:q.topic,question:q.q,correctAnswer:q.a,answer:q.last,correct:q.ok,puppies:q.pts}))};
+D.tests.push(rec);save();t.rec=rec;S.v='done';render()},
+again(){S.v='subj';render()}};
+document.body.onclick=e=>{const a=e.target.closest('[data-a]');if(a)A[a.dataset.a](a.dataset.v)};
+document.onkeydown=e=>{if(e.key==='Enter'&&e.target.id==='ans')A.chk();if(e.key==='Enter'&&e.target.id==='nm')A.go()};
+render();
+</script></body></html>
