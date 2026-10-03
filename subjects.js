@@ -6,7 +6,8 @@
         Each key idea is a list of accepted word-stems separated by | (e.g. 'vibrat' matches vibrate, vibrates, vibration).
         need = how many of the key ideas are required (default: all). no = stems that make the answer wrong (e.g. 'decreas').
      one(a, b, c)  picks one of several question templates, so a test rarely repeats a question.
-   Each topic is a separate file in a folder named after its subject (physics, chemistry); the list is at the bottom of this file. ---------- */
+   Each topic is a separate file in a folder named after its subject (physics, chemistry, biology); the list is at the bottom of this file.
+   A subject that is not already in the portal's subject list (such as Biology) is added to the list automatically. ---------- */
 const N=(q,a,u,m,w)=>({q,a,d:`${f(a)}${u?' '+u:''}`,m,w,k:'nm'});
 const M=(q,o,m)=>{const c=o[0],opts=shuf(o.slice()),ci=opts.indexOf(c),L='ABCD'[ci];return{q,a:`${L}) ${c}`,d:`${L}) ${c}`,m,w:`The correct option is ${L}: ${c}.`,k:'mc',opts,ci}};
 const T=(q,kw,a,m,o)=>({q,a,d:a,m,w:`Your wording can be different. It is marked on the key idea${kw.length>1?'s':''}, not the exact words.`,k:'tx',kw,...o});
@@ -30,6 +31,7 @@ Object.assign(A,{mc(v){const i=$('#ans');if(!i||i.disabled)return;i.value=v;mcUI
 chk(){const q=S.t.qs[S.t.i];if(!q.k)return chk0();cap();if(q.done)return;if(!q.last){q.fb='Type an answer first, then press Check Answer.';q.ok=false;render();return}
 const g=mark(q,q.last);if(g.ok){q.ok=q.done=true;q.pts=PUP[S.diff];S.t.pup+=q.pts;q.fb=`Correct! 🎉 +${q.pts} ${q.pts>1?'Puppies':'Puppy'} 🐶`;cheer()}else{q.ok=false;q.fb=g.fb}render()}});
 const G10=`Use g = 10 N/kg.`;
-const LOAD={Physics:['forces','energy','electricity','magnetism','waves','matter','space','skills'],Chemistry:['particles','atoms','mixtures','reactions','acids','periodic','energy','materials','earth','skills']};
-for(const sj in LOAD){BANK[sj]={};LOAD[sj].forEach(u=>{const s=document.createElement('script');s.src=sj.toLowerCase()+'/'+u+'.js';s.async=false;document.head.append(s)})}
+const LOAD={Physics:['forces','energy','electricity','magnetism','waves','matter','space','skills'],Chemistry:['particles','atoms','mixtures','reactions','acids','periodic','energy','materials','earth','skills'],Biology:['cells','transport','photosynthesis','respiration','digestion','reproduction','ecosystems','health','genetics','evolution','skills']};
+for(const sj in LOAD){BANK[sj]={};if(!SUBJ.includes(sj))SUBJ.splice(SUBJ.indexOf('Chemistry')+1,0,sj);LOAD[sj].forEach(u=>{const s=document.createElement('script');s.src=sj.toLowerCase()+'/'+u+'.js';s.async=false;document.head.append(s)})}
+const sbx=$('#sb');if(sbx){const v=sbx.value;sbx.innerHTML='<option value="">Choose a subject…</option>'+SUBJ.map(s=>`<option>${s}</option>`).join('');sbx.value=v}
 if(S.v=='test')render();
