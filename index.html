@@ -287,12 +287,17 @@ const lk=t=>t.student.toLowerCase()===S.name.toLowerCase(),mine=()=>D.tests.filt
 /* ---------- Cloud sync (Supabase). Students sign in with a name and PIN; the database function portal_sync checks the PIN,
    stores any new results and returns the student's full history, so the dashboard is the same on every device.
    SK is the project's public (publishable) key: it only allows calling portal_sync, never reading the tables directly.
-   A result that cannot be uploaded (no internet) stays in this browser and is sent at the next sign-in or dashboard visit. ---------- */
+   A result that cannot be uploaded (no internet) stays in this browser and is sent at the next sign-in or dashboard visit.
+   pull() keeps an open page in step with other devices: it runs every 30 seconds while the dashboard is showing,
+   and whenever the tab is reopened or the internet comes back. ---------- */
 const SB='https://zkxruxtvcgotbnersuaj.supabase.co',SK='sb_publishable_w5PQJEWWNFzh-QbIe5NNzw_k4nMJhk8';
 const sync=async(tests,mk)=>{const n=S.name,x=await fetch(SB+'/rest/v1/rpc/portal_sync',{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({p_name:n,p_pin:S.pin,p_tests:tests,p_create:!!mk})});if(!x.ok||n!==S.name)throw new Error('sync');return x.json()};
 const pend=()=>D.tests.filter(t=>lk(t)&&!t.sy).map(t=>(t.uid=t.uid||t.id+'|'+t.date,t));
 const take=j=>{const ids=new Set(j.tests.map(t=>t.uid));D.tests=D.tests.filter(t=>!lk(t)||(!t.sy&&!ids.has(t.uid))).concat(j.tests.map(t=>({...t,sy:1})));save()};
 const push=()=>{const p=pend();if(S.ok&&p.length)sync(p).then(j=>{if(j.status=='ok')take(j)}).catch(()=>{})};
+const sig=()=>mine().map(t=>t.uid+(t.sy||0)).join();
+const pull=()=>{if(!S.ok||S.busy||S.v=='test'||document.hidden)return;const p=pend(),b=sig();sync(p).then(j=>{if(j.status!='ok')return;take(j);if(S.v=='dash'&&sig()!=b)render()}).catch(()=>{})};
+setInterval(()=>{if(S.v=='dash')pull()},30000);document.addEventListener('visibilitychange',pull);window.addEventListener('online',pull);
 function cheer(){try{const c=new(window.AudioContext||window.webkitAudioContext)(),n=c.sampleRate,b=c.createBuffer(1,n,n),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(Math.random()<.02?1:.15)*(1-i/n);const s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start();[523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.12;o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.start(t);o.stop(t+.3)})}catch(e){}
 for(let i=0;i<28;i++){const e=document.createElement('span');e.className='cf';e.textContent=['🐶','🎉','👏','⭐'][i%4];e.style.left=Math.random()*100+'vw';e.style.animationDelay=Math.random()*.4+'s';document.body.append(e);setTimeout(()=>e.remove(),2300)}}
 /* ---------- Views ---------- */
@@ -313,7 +318,7 @@ dash(){if(!S.ok)return;S.v='dash';render();sync(pend()).then(j=>{if(j.status=='o
 out(){S.ok=false;S.pin='';S.t=null;S.v='home';render()},
 async go(){if(S.busy)return;const n=$('#nm').value.trim(),p=$('#pn').value.trim(),s=$('#sb').value,pk=/^\d{4,8}$/.test(p),er=m=>{const e=$('#er');if(e)e.textContent=m};if(!n||!pk||!s){er(!n?'Enter your name to continue.':!pk?'Enter your PIN (4 to 8 digits).':'Select a subject to continue.');return}
 S.name=n;S.pin=p;S.ok=false;S.subj=s;S.busy=1;er('Signing in…');
-try{let j=await sync(pend());if(j.status=='unknown'){if(!confirm(`There is no student called "${n}" yet.\n\nCreate a new student with this PIN?`)){er('');return}j=await sync(pend(),1)}
+try{let j=await sync(pend());if(j.status=='unknown'){const c=prompt(`There is no student called "${n}" yet.\n\nTo create a new student, type the PIN again to confirm it:`);if(c===null){er('');return}if(c.trim()!==p){er('The two PINs did not match, so nothing was created. Try again.');return}j=await sync(pend(),1)}
 if(j.status!='ok'){er(j.status=='wrong_pin'?'That PIN does not match this name. Try again.':j.status=='locked'?'Too many wrong PINs. Wait 5 minutes, then try again.':'Could not sign in. Check the name and PIN.');return}
 take(j);S.ok=true;D.last=n;save();S.diff=-1;S.topic='';S.v='subj';render()}catch(e){er('Could not reach the server. Check the internet connection and try again.')}finally{S.busy=0}},
 diff(v){S.diff=+v;render()},top(v){S.topic=v;render()},
