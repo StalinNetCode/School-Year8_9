@@ -28,7 +28,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 </style></head><body><nav id="nv"></nav><main id="app"></main>
 <script>
 "use strict";
-/* ---------- Storage layer (swap these two functions for a backend later) ---------- */
+/* ---------- Storage layer: this browser's copy of the results. The cloud sync further down keeps the shared copy in Supabase. ---------- */
 const KEY='y8_10_portal_v1';let D={tests:[],last:''};
 try{Object.assign(D,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};
@@ -282,25 +282,40 @@ const pn=s=>{s=String(s).toLowerCase().replace(/[\s*]/g,'').replace(/²/g,'^2').
 const nl=s=>String(s).toLowerCase().replace(/[x=°%£]|cm|units?|degrees?/g,'').replace(/−/g,'-').split(/[,;]|\band\b|\bor\b|\s+/).filter(Boolean).map(num);
 const check=(q,v)=>Array.isArray(q.a)?(()=>{const g=nl(v).sort((a,b)=>a-b),e=[...q.a].sort((a,b)=>a-b);return g.length==e.length&&g.every((x,i)=>Math.abs(x-e[i])<0.005)})():typeof q.a==='number'?Math.abs(num(v)-q.a)<0.005:[q.a,...(q.alt||[])].some(x=>{const a=pn(x);return norm(x)===norm(v)||(a!==null&&a===pn(v))});
 /* ---------- State ---------- */
-let S={v:'home',name:D.last,subj:'',diff:-1,topic:'',t:null};
-const mine=()=>D.tests.filter(t=>t.student.toLowerCase()===S.name.toLowerCase());
+let S={v:'home',name:D.last,pin:'',ok:false,subj:'',diff:-1,topic:'',t:null};
+const lk=t=>t.student.toLowerCase()===S.name.toLowerCase(),mine=()=>D.tests.filter(lk).sort((a,b)=>a.date<b.date?-1:1);
+/* ---------- Cloud sync (Supabase). Students sign in with a name and PIN; the database function portal_sync checks the PIN,
+   stores any new results and returns the student's full history, so the dashboard is the same on every device.
+   SK is the project's public (publishable) key: it only allows calling portal_sync, never reading the tables directly.
+   A result that cannot be uploaded (no internet) stays in this browser and is sent at the next sign-in or dashboard visit. ---------- */
+const SB='https://zkxruxtvcgotbnersuaj.supabase.co',SK='sb_publishable_w5PQJEWWNFzh-QbIe5NNzw_k4nMJhk8';
+const sync=async(tests,mk)=>{const n=S.name,x=await fetch(SB+'/rest/v1/rpc/portal_sync',{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({p_name:n,p_pin:S.pin,p_tests:tests,p_create:!!mk})});if(!x.ok||n!==S.name)throw new Error('sync');return x.json()};
+const pend=()=>D.tests.filter(t=>lk(t)&&!t.sy).map(t=>(t.uid=t.uid||t.id+'|'+t.date,t));
+const take=j=>{const ids=new Set(j.tests.map(t=>t.uid));D.tests=D.tests.filter(t=>!lk(t)||(!t.sy&&!ids.has(t.uid))).concat(j.tests.map(t=>({...t,sy:1})));save()};
+const push=()=>{const p=pend();if(S.ok&&p.length)sync(p).then(j=>{if(j.status=='ok')take(j)}).catch(()=>{})};
 function cheer(){try{const c=new(window.AudioContext||window.webkitAudioContext)(),n=c.sampleRate,b=c.createBuffer(1,n,n),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(Math.random()<.02?1:.15)*(1-i/n);const s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start();[523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.12;o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.start(t);o.stop(t+.3)})}catch(e){}
 for(let i=0;i<28;i++){const e=document.createElement('span');e.className='cf';e.textContent=['🐶','🎉','👏','⭐'][i%4];e.style.left=Math.random()*100+'vw';e.style.animationDelay=Math.random()*.4+'s';document.body.append(e);setTimeout(()=>e.remove(),2300)}}
 /* ---------- Views ---------- */
 const V={
-home:()=>`<h1>Year 8 &amp; 9 Practice Portal</h1><p class=mu>Type your answers, earn Puppies 🐶 and watch your total grow.</p><div class=card><label>Student Name<input id=nm value="${esc(S.name)}" placeholder="e.g. Swati" autocomplete=off></label><label>Subject<select id=sb><option value="">Choose a subject…</option>${SUBJ.map(s=>`<option ${s==S.subj?'selected':''}>${s}</option>`).join('')}</select></label><p class=err id=er></p><button data-a=go>Continue</button></div>`,
+home:()=>`<h1>Year 8 &amp; 9 Practice Portal</h1><p class=mu>Type your answers, earn Puppies 🐶 and watch your total grow.</p><div class=card><label>Student Name<input id=nm value="${esc(S.name)}" placeholder="e.g. Swati" autocomplete=off></label><label>PIN (4 to 8 digits)<input id=pn type=password inputmode=numeric maxlength=8 value="${S.ok?esc(S.pin):''}" placeholder="Your secret number" autocomplete=off></label><label>Subject<select id=sb><option value="">Choose a subject…</option>${SUBJ.map(s=>`<option ${s==S.subj?'selected':''}>${s}</option>`).join('')}</select></label><p class=mu>First time? Choose a PIN and remember it. Your results are saved online, so you can carry on from any device.</p><p class=err id=er></p><button data-a=go>Continue</button></div>`,
 subj:()=>{const tp=Object.keys(BANK[S.subj]||{}),ready=S.diff>=0&&S.topic;return `<h1>${S.subj} Practice</h1><p class=mu>Student: ${esc(S.name)}</p><div class=card><h2>Difficulty</h2><div class=chips>${DIFF.map((d,i)=>`<button class="chip ${S.diff==i?'on':''}" data-a=diff data-v=${i}>${d}<small>🐶 ${PUP[i]} ${PUP[i]>1?'Puppies':'Puppy'} per correct answer</small></button>`).join('')}</div><h2>Topic</h2>${tp.length?`<div class=chips>${tp.concat('Mixed').map(t=>`<button class="chip ${S.topic==t?'on':''}" data-a=top data-v="${esc(t)}">${t=='Mixed'?'Mixed topics (all)':t}</button>`).join('')}</div>`:`<p>${S.subj} questions aren't loaded yet. Add topics to the question bank to switch this subject on.</p>`}<button data-a=start ${ready?'':'disabled'}>Start test</button><button class=g data-a=home>Change subject</button></div>`},
 test:()=>{const t=S.t,q=t.qs[t.i];return `<p><b>${esc(t.id)}</b> <span class=mu>(Set ${t.setNo} of 10)</span></p><div class=meta><span>Question ${t.i+1} of 10</span><span>${DIFF[S.diff]}</span><span>${esc(q.topic)}</span><span>🐶 ${t.pup} earned</span><span>${t.qs.filter(x=>!x.done).length} left</span></div><div class=card><h2>Question</h2><p class=q>${q.q}</p><h3>Your Answer</h3><input id=ans value="${esc(q.last||'')}" ${q.done?'disabled':''} placeholder="Type your answer" autocomplete=off>${typeof q.a==='string'?'<p class=mu>Type powers with ^, for example 3x^2 - 5x + 2.</p>':''}<div><button data-a=chk ${q.done?'disabled':''}>Check Answer</button><button class=g data-a=exp>Explain</button><button class=g data-a=cor>Correction</button></div>${q.fb?`<p class="fb ${q.ok?'ok':'bad'}" role=status>${q.fb}</p>`:''}${q.showEx?`<div class=pn><h3>Explain</h3><p>${q.m}</p></div>`:''}${q.showCor?`<div class=pn><h3>Correction</h3><p><b>Correct answer:</b> ${esc(ans(q))}</p><p><b>Method:</b> ${q.m}</p><p><b>Working:</b> ${q.w}</p><p><b>Your answer:</b> ${q.ok?'Correct.':q.last?`You wrote "${esc(q.last)}", which doesn't match ${esc(ans(q))}. Compare it with the working above.`:'You did not enter an answer.'}</p><p class=mu>No Puppies are awarded for using Correction.</p></div>`:''}${q.done?`<button data-a=next>${t.i==9?'Finish test':'Next question'} →</button>`:''}</div>`},
 done:()=>{const t=S.t.rec;return `<h1>Test Complete! 🎉</h1><div class=card><p><b>Student:</b> ${esc(t.student)}<br><b>Subject:</b> ${t.subject}<br><b>Topic:</b> ${t.topic=='Mixed'?'Mixed topics':t.topic}<br><b>Difficulty:</b> ${DIFF[t.diff]}<br><b>Test Number:</b> ${esc(t.id)}<br><b>Date:</b> ${new Date(t.date).toLocaleDateString('en-GB')}</p><p><b>Correct:</b> ${t.correct} / 10<br><b>Incorrect:</b> ${10-t.correct} / 10</p><p class=q>Total Puppies: ${t.puppies} 🐶</p><button data-a=again>New test</button><button class=g data-a=dash>Dashboard</button></div>`},
-dash:()=>{const T=mine().slice().reverse(),P=T.reduce((s,t)=>s+t.puppies,0),C=T.reduce((s,t)=>s+t.correct,0),N=T.length*10,by={};T.forEach(t=>by[t.subject]=(by[t.subject]||0)+t.puppies);const rec=T.slice(0,10).reverse(),mx=Math.max(1,...rec.map(t=>t.puppies));
-return `<h1>${esc(S.name)}'s Dashboard</h1><div class=stats><div class=big><span>🐶 Total Puppies</span><b>${P}</b></div><div><span>Tests completed</span><b>${T.length}</b></div><div><span>Questions answered</span><b>${N}</b></div><div><span>Correct answers</span><b>${C}</b></div><div><span>Accuracy</span><b>${N?Math.round(C/N*100):0}%</b></div></div>
+dash:()=>{const T=mine().slice().reverse(),P=T.reduce((s,t)=>s+t.puppies,0),C=T.reduce((s,t)=>s+t.correct,0),N=T.length*10,by={},wt=pend().length;T.forEach(t=>by[t.subject]=(by[t.subject]||0)+t.puppies);const rec=T.slice(0,10).reverse(),mx=Math.max(1,...rec.map(t=>t.puppies));
+return `<h1>${esc(S.name)}'s Dashboard</h1>${wt?`<p class=mu>${wt} result${wt>1?'s are':' is'} saved on this device and will upload when the internet is back.</p>`:''}<div class=stats><div class=big><span>🐶 Total Puppies</span><b>${P}</b></div><div><span>Tests completed</span><b>${T.length}</b></div><div><span>Questions answered</span><b>${N}</b></div><div><span>Correct answers</span><b>${C}</b></div><div><span>Accuracy</span><b>${N?Math.round(C/N*100):0}%</b></div></div>
 <div class=card><h2>Puppies by subject</h2>${Object.keys(by).length?Object.entries(by).map(([k,v])=>`<p>${k}: <b>${v} 🐶</b></p>`).join(''):'<p class=mu>Complete a test to start earning Puppies.</p>'}<h2>Puppies per recent test</h2><div class=bars>${rec.map(t=>`<i title="${esc(t.id)}: ${t.puppies}" style="height:${t.puppies/mx*100}%"></i>`).join('')}</div></div>
 <h2>Recent tests</h2><div class=wrap><table><tr><th>Date<th>Test Number<th>Subject<th>Topic<th>Difficulty<th>Correct<th>Puppies</tr>${T.map(t=>`<tr><td>${new Date(t.date).toLocaleDateString('en-GB')}<td>${esc(t.id)}<td>${t.subject}<td>${t.topic}<td>${DIFF[t.diff]}<td>${t.correct}/10<td>${t.puppies} 🐶</tr>`).join('')||'<tr><td colspan=7>No tests yet.</tr>'}</table></div>`}};
-function render(){$('#nv').innerHTML=S.name&&S.v!='home'?`<button class=g data-a=home>Home</button><button class=g data-a=dash>Dashboard</button>`:S.name?`<button class=g data-a=dash>Dashboard</button>`:'';$('#app').innerHTML=V[S.v]();const i=$('#ans');if(i&&!i.disabled)i.focus();window.scrollTo(0,0)}
+function render(){$('#nv').innerHTML=S.ok?`${S.v!='home'?'<button class=g data-a=home>Home</button>':''}<button class=g data-a=dash>Dashboard</button><button class=g data-a=out>Sign out</button>`:'';$('#app').innerHTML=V[S.v]();const i=$('#ans');if(i&&!i.disabled)i.focus();window.scrollTo(0,0)}
 const cap=()=>{const i=$('#ans'),q=S.t.qs[S.t.i];if(i&&!q.done)q.last=i.value.trim();return q};
 const A={
-home(){S.v='home';render()},dash(){S.v='dash';render()},
-go(){const n=$('#nm').value.trim(),s=$('#sb').value;if(!n||!s){$('#er').textContent=!n?'Enter your name to continue.':'Select a subject to continue.';return}S.name=n;D.last=n;save();S.subj=s;S.diff=-1;S.topic='';S.v='subj';render()},
+home(){S.v='home';render()},
+dash(){if(!S.ok)return;S.v='dash';render();sync(pend()).then(j=>{if(j.status=='ok'){take(j);if(S.v=='dash')render()}}).catch(()=>{})},
+out(){S.ok=false;S.pin='';S.t=null;S.v='home';render()},
+async go(){if(S.busy)return;const n=$('#nm').value.trim(),p=$('#pn').value.trim(),s=$('#sb').value,pk=/^\d{4,8}$/.test(p),er=m=>{const e=$('#er');if(e)e.textContent=m};if(!n||!pk||!s){er(!n?'Enter your name to continue.':!pk?'Enter your PIN (4 to 8 digits).':'Select a subject to continue.');return}
+S.name=n;S.pin=p;S.ok=false;S.subj=s;S.busy=1;er('Signing in…');
+try{let j=await sync(pend());if(j.status=='unknown'){if(!confirm(`There is no student called "${n}" yet.\n\nCreate a new student with this PIN?`)){er('');return}j=await sync(pend(),1)}
+if(j.status!='ok'){er(j.status=='wrong_pin'?'That PIN does not match this name. Try again.':j.status=='locked'?'Too many wrong PINs. Wait 5 minutes, then try again.':'Could not sign in. Check the name and PIN.');return}
+take(j);S.ok=true;D.last=n;save();S.diff=-1;S.topic='';S.v='subj';render()}catch(e){er('Could not reach the server. Check the internet connection and try again.')}finally{S.busy=0}},
 diff(v){S.diff=+v;render()},top(v){S.topic=v;render()},
 start(){const tp=S.topic,key=[S.name.toLowerCase(),S.subj,tp,S.diff].join('|'),setNo=D.tests.filter(t=>t.key==key).length%10+1;R=rng(`${S.subj}|${tp}|${S.diff}|${setNo}`);const B=BANK[S.subj],names=tp=='Mixed'?shuf(Object.keys(B)):[tp],qs=[],seen=new Set,pool={},prev={};
 const gen=nm=>{const all=[].concat(B[nm][S.diff]);if(!pool[nm]||!pool[nm].length){pool[nm]=shuf(all.slice());if(all.length>1&&pool[nm][pool[nm].length-1]==prev[nm])pool[nm].unshift(pool[nm].pop())}return prev[nm]=pool[nm].pop()};
@@ -313,10 +328,10 @@ if(check(q,q.last)){q.ok=q.done=true;q.pts=PUP[S.diff];S.t.pup+=q.pts;q.fb=`Corr
 exp(){const q=cap();q.showEx=!q.showEx;render()},
 cor(){const q=cap();q.showCor=true;if(!q.ok){q.done=true;q.fb='Answer revealed. No Puppies awarded for this question.'}render()},
 next(){const t=S.t;if(t.i<9){t.i++;render();return}
-const rec={id:t.id,num:t.num,key:t.key,student:S.name,subject:S.subj,topic:S.topic,diff:S.diff,setNo:t.setNo,date:new Date().toISOString(),correct:t.qs.filter(q=>q.ok).length,puppies:t.pup,questions:t.qs.map(q=>({topic:q.topic,question:q.q,correctAnswer:q.a,answer:q.last,correct:q.ok,puppies:q.pts}))};
-D.tests.push(rec);save();t.rec=rec;S.v='done';render()},
+const rec={uid:window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2),id:t.id,num:t.num,key:t.key,student:S.name,subject:S.subj,topic:S.topic,diff:S.diff,setNo:t.setNo,date:new Date().toISOString(),correct:t.qs.filter(q=>q.ok).length,puppies:t.pup,questions:t.qs.map(q=>({topic:q.topic,question:q.q,correctAnswer:q.a,answer:q.last,correct:q.ok,puppies:q.pts}))};
+D.tests.push(rec);save();push();t.rec=rec;S.v='done';render()},
 again(){S.v='subj';render()}};
 document.body.onclick=e=>{const a=e.target.closest('[data-a]');if(a)A[a.dataset.a](a.dataset.v)};
-document.onkeydown=e=>{if(e.key==='Enter'&&e.target.id==='ans')A.chk();if(e.key==='Enter'&&e.target.id==='nm')A.go()};
+document.onkeydown=e=>{if(e.key==='Enter'&&e.target.id==='ans')A.chk();if(e.key==='Enter'&&(e.target.id==='nm'||e.target.id==='pn'))A.go()};
 render();
 </script></body></html>
