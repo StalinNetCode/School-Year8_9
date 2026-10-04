@@ -1,0 +1,33 @@
+/* Spanish: Future plans. BANK.Spanish[topic] = [easy, moderate, difficult, very difficult]. Helpers are in spanish/core.js and subjects.js. */
+(()=>{const {toEn,toEs,mcEn,mcEs,tE,tS,rd,wr,conj}=ES,
+W1=[['el médico','doctor'],['el profesor','teacher'],['el ingeniero','engineer'],['el abogado','lawyer',,' lawyer | solicitor '],['el enfermero','nurse'],['el cocinero','cook',,' cook | chef '],['el periodista','journalist'],['el policía','police officer',,' police officer | policeman | police | policewoman '],['el bombero','firefighter',,' firefighter | fireman | fire fighter '],['el dentista','dentist']],
+W2=[['el trabajo','job',,' job | work '],['la universidad','university'],['el futuro','future'],['el dinero','money'],['el sueño','dream'],['la empresa','company',,' company | business | firm '],['ganar','to earn',,' earn | win '],['viajar','to travel'],['ayudar','to help'],['estudiar','to study']],
+W3=[['voy a','I am going to',,' i am going to | i m going to | going to '],['quiero ser','I want to be'],['me gustaría','I would like'],['espero','I hope'],['cuando sea mayor','when I am older',' cuando sea mayor ',' when i am older | when i m older | when i grow up '],['en el futuro','in the future'],['seré','I will be',,' i will be | i ll be | i shall be '],['trabajaré','I will work',,' i will work | i ll work '],['tendré','I will have',,' i will have | i ll have '],['iré','I will go',,' i will go | i ll go ']],
+R1=`En el futuro quiero ser médica porque me gusta ayudar a la gente. Primero voy a estudiar ciencias en la universidad. No me importa el dinero; lo más importante es tener un trabajo interesante.`,
+R2=`Cuando era pequeño quería ser futbolista, pero ahora sé que es muy difícil. Mis padres piensan que debería ser abogado como mi madre; sin embargo, a mí me interesa más la informática. Si saco buenas notas, estudiaré ingeniería y trabajaré en el extranjero.`;
+BANK.Spanish['Future plans']=[
+/* Easy */[mcEn(W1),toEn(W1),mcEs(W1),mcEn(W2)],
+/* Moderate */[toEs(W1),toEn(W2),mcEn(W3),
+one(tE(`Quiero ser profesor.`,[`want`,`teacher`],`I want to be a teacher.`),
+tE(`Voy a estudiar en la universidad.`,[`going to`,`study`,`university`],`I am going to study at university.`),
+tE(`Me gustaría viajar por el mundo.`,[`would like|d like`,`travel`,`world`],`I would like to travel around the world.`)),
+conj('near',[0,1,2,4,6])],
+/* Difficult */[toEs(W3),toEs(W2),
+one(tS(`I want to be a doctor because I like helping people.`,[` quiero ser `,` medic`,` porque `,` ayudar `],`Quiero ser médico porque me gusta ayudar a la gente.`),
+tS(`In the future I am going to work in a company.`,[` en el futuro `,` voy a trabajar | trabajare `,` empresa `],`En el futuro voy a trabajar en una empresa.`),
+tS(`I would like to earn a lot of money.`,[` me gustaria | quisiera `,` ganar `,` mucho dinero `],`Me gustaría ganar mucho dinero.`)),
+one(rd(R1,`What job does the writer want to do?`,[`doctor`,`teacher`,`scientist`,`nurse`],`"Quiero ser médica" means "I want to be a doctor".`),
+rd(R1,`What will she study at university?`,[`science`,`medicine in Spain`,`languages`,`history`],`"Voy a estudiar ciencias" means "I am going to study science".`),
+rd(R1,`What matters most to the writer?`,[`having an interesting job`,`earning a lot of money`,`travelling`,`working near home`],`"Lo más importante es tener un trabajo interesante".`)),
+conj('fut',[0,2,4,6])],
+/* Very Difficult */[
+one(rd(R2,`What did the writer want to be as a child?`,[`a footballer`,`a lawyer`,`an engineer`,`a teacher`],`"Quería ser futbolista" means "I wanted to be a footballer".`),
+rd(R2,`What do the writer's parents think?`,[`He should be a lawyer`,`He should be an engineer`,`He should be a footballer`,`He should work abroad`],`"Debería ser abogado como mi madre" means "I should be a lawyer like my mother".`),
+rd(R2,`On what condition will the writer study engineering?`,[`If he gets good marks`,`If his parents agree`,`If he earns enough money`,`If he moves abroad`],`"Si saco buenas notas" means "if I get good marks".`)),
+one(tS(`When I am older, I will be an engineer and I will live abroad.`,[` cuando sea mayor `,` sere `,` ingenier`,` vivire `,` extranjero `],`Cuando sea mayor, seré ingeniero y viviré en el extranjero.`),
+tS(`If I study a lot, I will go to university.`,[` si `,` estudio `,` ire `,` universidad `],`Si estudio mucho, iré a la universidad.`),
+tS(`I would like to be a journalist, although it is a difficult job.`,[` me gustaria | quisiera `,` periodista `,` aunque `,` trabajo dificil `],`Me gustaría ser periodista, aunque es un trabajo difícil.`)),
+one(wr(`Write a sentence in Spanish saying what job you want to do in the future and why.`,[` quiero ser | me gustaria ser | voy a ser | sere | quisiera ser | espero ser `,ES.BC],`Quiero ser ingeniera porque me encantan las matemáticas.`),
+wr(`Write a sentence in Spanish saying what you are going to study next year.`,[` voy a estudiar | estudiare | quiero estudiar | me gustaria estudiar `],`El año que viene voy a estudiar historia y español.`),
+wr(`Write a sentence in Spanish beginning "Si…" (If…), saying what you will do if something happens.`,[` si `,` ire | sere | tendre | hare | estudiare | trabajare | viajare | comprare | podre | voy a `],`Si gano mucho dinero, viajaré por el mundo.`)),
+ES.mcConj('fut')]]})();

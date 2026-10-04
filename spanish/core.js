@@ -1,0 +1,30 @@
+/* Spanish helpers, loaded before the Spanish topic files. A vocabulary entry is [spanish, english, spanishStems, englishStems];
+   the stems are optional and list other accepted answers, separated by |. Typed answers are compared without accents. */
+const ES={
+st:e=>' '+plain(e).replace(/[¿?¡!.,]/g,'').trim().replace(/^(el|la|los|las|un|una|unos|unas) /,'')+' ',
+en:n=>' '+n.toLowerCase().replace(/^(to|the|a|an) /,'')+' ',
+toEn:W=>()=>{const [e,n,,k]=pick(W);return T(`What does the Spanish "${e}" mean in English?`,[k||ES.en(n)],n,`"${e}" means "${n}".`)},
+toEs:W=>()=>{const [e,n,k]=pick(W);return T(`How do you say "${n}" in Spanish?`,[k||ES.st(e)],e,`"${n}" is "${e}" in Spanish. You do not need to type the accents.`)},
+mcEn:W=>()=>{const s=shuf(W.slice()).slice(0,4);return M(`Choose the English meaning of the Spanish "${s[0][0]}".`,s.map(x=>x[1]),`"${s[0][0]}" means "${s[0][1]}".`)},
+mcEs:W=>()=>{const s=shuf(W.slice()).slice(0,4);return M(`Choose the Spanish for "${s[0][1]}".`,s.map(x=>x[0]),`"${s[0][1]}" is "${s[0][0]}" in Spanish.`)},
+tE:(e,kw,a)=>()=>T(`Translate into English: "${e}"`,kw,a,`Translate each part in turn, then check that the sentence makes sense in English.`),
+tS:(n,kw,a)=>()=>T(`Translate into Spanish: "${n}"`,kw,a,`Check the verb ending and any adjective agreement. You do not need to type the accents.`),
+rd:(tx,q,o,m)=>()=>M(`Read the Spanish: "${tx}" ${q}`,o,m),
+wr:(task,kw,a,o)=>()=>T(task,kw,a,`Your sentence is checked only for the key parts (for example an opinion phrase, a reason or the right tense). Compare the rest with the model answer yourself.`,o),
+OP:` me gusta| me encanta| prefiero| odio| me interesa| pienso que| creo que| en mi opinion| me chifla| me mola| me fascina`,
+BC:` porque | ya que | dado que | puesto que `,
+PT:` fui | fuimos | jugue | vi | comi | hice | sali | visite | compre | pase | nade | bebi | escuche | estudie | viaje | tome | lei | baile | mire | fue | tuve | estuve | lo pase | comimos | visitamos | jugamos | hicimos | vimos `,
+FT:` voy a | vamos a | va a | ire | sere | tendre | hare | estudiare | trabajare | viajare | quiero | me gustaria | quisiera | espero `,
+V:{ar:[['hablar','to speak'],['estudiar','to study'],['bailar','to dance'],['escuchar','to listen'],['trabajar','to work'],['viajar','to travel'],['cocinar','to cook'],['nadar','to swim'],['comprar','to buy'],['visitar','to visit'],['cantar','to sing'],['ayudar','to help']],er:[['comer','to eat'],['beber','to drink'],['aprender','to learn'],['correr','to run'],['vender','to sell'],['comprender','to understand']],ir:[['vivir','to live'],['escribir','to write'],['recibir','to receive'],['subir','to go up'],['abrir','to open'],['decidir','to decide']]},
+P:[['Yo',0],['Tú',1],['Él',2],['Ella',2],['Nosotros',3],['Vosotros',4],['Ellos',5],['Ellas',5]],
+E:{pres:{ar:['o','as','a','amos','áis','an'],er:['o','es','e','emos','éis','en'],ir:['o','es','e','imos','ís','en']},pret:{ar:['é','aste','ó','amos','asteis','aron'],er:['í','iste','ió','imos','isteis','ieron'],ir:['í','iste','ió','imos','isteis','ieron']},fut:['é','ás','á','emos','éis','án'],go:['voy','vas','va','vamos','vais','van']},
+TN:{pres:'present',pret:'preterite (simple past)',fut:'future',near:'near future'},
+H:{pres:`Remove -ar, -er or -ir from the infinitive and add the present tense ending for that person.`,pret:`Remove -ar, -er or -ir and add the preterite ending. Verbs ending in -er and -ir share the same endings.`,fut:`Add the future ending to the whole infinitive: -é, -ás, -á, -emos, -éis, -án.`,near:`Use the correct part of "ir" (voy, vas, va, vamos, vais, van), then "a", then the infinitive.`},
+cj:(inf,t,i)=>t=='fut'?inf+ES.E.fut[i]:t=='near'?`${ES.E.go[i]} a ${inf}`:inf.slice(0,-2)+ES.E[t][inf.slice(-2)][i],
+vb:()=>pick(ES.V[pick(['ar','ar','er','ir'])]),
+conj:(t,ps)=>()=>{const [inf,en]=ES.vb(),[pr,i]=ES.P[pick(ps)],a=ES.cj(inf,t,i);return T(`Fill in the blank with the ${ES.TN[t]} tense of "${inf}" (${en}): ${pr} ______.`,[ES.st(a)],a,ES.H[t])},
+mcConj:t=>()=>{const [inf,en]=ES.vb(),ix=shuf([0,1,2,3,5]).slice(0,4),pr=ES.P.find(p=>p[1]==ix[0])[0];return M(`Which is the correct ${ES.TN[t]} tense form of "${inf}" (${en}) to go with "${pr}"?`,ix.map(i=>ES.cj(inf,t,i)),ES.H[t])},
+num:n=>{const u=['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'],d=['','','','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];return n<30?u[n]:n==100?'cien':d[n/10|0]+(n%10?' y '+u[n%10]:'')},
+numFig:(lo,hi)=>()=>{const n=r(lo,hi);return N(`Write this Spanish number as a figure: ${ES.num(n)}`,n,``,`From 31 upwards, the tens and units are joined with "y": for example, cuarenta y dos is 42.`,`${ES.num(n)} = ${n}`)},
+numEs:(lo,hi)=>()=>{const n=r(lo,hi);return T(`Write the number ${n} in Spanish words.`,[ES.st(ES.num(n))],ES.num(n),`Numbers up to 29 are written as one word. From 31 upwards, the tens and units are joined with "y".`)}
+};

@@ -1,0 +1,25 @@
+/* Spanish: Vocabulary development. BANK.Spanish[topic] = [easy, moderate, difficult, very difficult]. Helpers are in spanish/core.js and subjects.js. */
+(()=>{const {toEn,toEs,mcEn,mcEs,tE,tS,rd,wr,conj,numFig,numEs}=ES,
+W1=[['rojo','red',' roj'],['azul','blue'],['verde','green'],['amarillo','yellow',' amarill'],['negro','black',' negr'],['blanco','white',' blanc'],['lunes','Monday'],['martes','Tuesday'],['miércoles','Wednesday'],['jueves','Thursday'],['viernes','Friday'],['sábado','Saturday'],['domingo','Sunday']],
+W2=[['grande','big',,' big | large '],['pequeño','small',' pequen',' small | little '],['bueno','good',' buen'],['malo','bad',' mal'],['nuevo','new',' nuev'],['viejo','old',' viej'],['feliz','happy',,' happy | glad '],['triste','sad'],['caro','expensive',' car',' expensive | dear '],['barato','cheap',' barat'],['rápido','fast',' rapid',' fast | quick '],['lento','slow',' lent']],
+W3=[['siempre','always'],['nunca','never'],['a menudo','often',,' often | frequently '],['a veces','sometimes'],['ayer','yesterday'],['hoy','today'],['mañana','tomorrow',,' tomorrow | morning '],['ahora','now'],['después','afterwards',,' afterwards | after | later | then '],['antes','before',,' before | previously '],['todavía','still',,' still | yet '],['ya','already',,' already | now ']],
+OPP=[['grande','pequeño',' pequen'],['bueno','malo',' mal'],['nuevo','viejo',' viej'],['feliz','triste'],['caro','barato',' barat'],['rápido','lento',' lent'],['siempre','nunca'],['fácil','difícil'],['alto','bajo',' baj'],['frío','caliente',' caliente | calor | calid'],['abierto','cerrado',' cerrad'],['limpio','sucio',' suci']],
+SYN=[['contento','feliz',' feliz | alegre '],['bonito','guapo',' guap| hermos| lind| bell'],['el colegio','la escuela',' escuela | instituto '],['empezar','comenzar'],['terminar','acabar',' acabar | finalizar '],['hablar','charlar',' charlar | conversar | decir '],['andar','caminar'],['el coche','el automóvil',' automovil | carro | auto ']],
+opp=()=>{const [a,b,k]=pick(OPP);return T(`Give the Spanish OPPOSITE (antonym) of "${a}".`,[k||ES.st(b)],b,`"${a}" and "${b}" are opposites.`)},
+syn=()=>{const [a,b,k]=pick(SYN);return T(`Give a Spanish word that means the SAME (a synonym) as "${a}".`,[k||ES.st(b)],b,`"${a}" and "${b}" have the same or a very similar meaning.`)},
+mcOpp=()=>{const s=shuf(OPP.slice()).slice(0,4);return M(`Which word is the opposite of "${s[0][0]}"?`,s.map(x=>x[1]),`"${s[0][0]}" and "${s[0][1]}" are opposites.`)};
+BANK.Spanish['Vocabulary development']=[
+/* Easy */[mcEn(W1),toEn(W1),numFig(1,20),mcEs(W1)],
+/* Moderate */[toEs(W1),mcEn(W2),toEn(W3),numFig(21,60),mcOpp],
+/* Difficult */[toEs(W2),toEs(W3),opp,numEs(11,40),
+one(()=>M(`"Voy al colegio ______ los días." Which word completes the sentence to mean "every day"?`,[`todos`,`nunca`,`algunos`,`pocos`],`"Todos los días" means "every day".`),
+()=>M(`"Mi hermano es muy ______; siempre saca buenas notas." Which word fits best?`,[`inteligente`,`perezoso`,`triste`,`lento`],`"Saca buenas notas" (gets good marks) suggests "intelligent".`),
+()=>M(`"No tengo dinero, así que busco algo ______." Which word fits best?`,[`barato`,`caro`,`viejo`,`rápido`],`With no money, you look for something cheap ("barato").`))],
+/* Very Difficult */[opp,syn,numEs(41,100),numFig(61,100),
+one(()=>M(`"Embarazada" is a false friend. What does it mean?`,[`pregnant`,`embarrassed`,`surprised`,`ashamed`],`"Embarrassed" is "avergonzado" in Spanish.`),
+()=>M(`"La librería" is a false friend. What does it mean?`,[`bookshop`,`library`,`bookshelf only`,`freedom`],`"Library" is "la biblioteca".`),
+()=>M(`"Sensible" is a false friend. What does it mean in Spanish?`,[`sensitive`,`sensible`,`sensational`,`serious`],`The English "sensible" is "sensato" in Spanish.`),
+()=>M(`"Actualmente" is a false friend. What does it mean?`,[`currently (at the moment)`,`actually`,`accurately`,`actively`],`"Actually" is "en realidad".`)),
+one(()=>M(`"Anoche llovió a cántaros, así que nos quedamos en casa." What does "llovió a cántaros" most likely mean?`,[`it rained very heavily`,`it rained a little`,`it was sunny`,`it snowed`],`They stayed at home because of it, so it must have rained a lot. It is like "raining cats and dogs".`),
+()=>M(`"Estoy agotado: he trabajado doce horas sin parar." What does "agotado" most likely mean?`,[`exhausted`,`excited`,`hungry`,`bored`],`After twelve hours of work without stopping, you would be exhausted.`),
+()=>M(`"El examen fue pan comido; lo terminé en diez minutos." What does "pan comido" most likely mean?`,[`very easy`,`very difficult`,`very long`,`about food`],`Finishing in ten minutes suggests it was very easy. It is like "a piece of cake".`))]]})();
