@@ -10,6 +10,7 @@
    Typed answers are compared without accents, so "espanol" matches "español".
    Each topic is a separate file in a folder named after its subject (physics, chemistry, biology, spanish, english); the list is at the bottom of this file.
    A "Previous question" button is added to every test (all subjects) so a student can look back at earlier questions.
+   Explain is locked until a question is finished, so it cannot be used as a hint; Correction shows the answer and steps, Explain adds the reasoning.
    The dashboard gains a Redeem Puppies section: total earned, balance and redeemed are shown, with links to share a redemption.
    Sign-in (A.go) is replaced here so that a student who was given a temporary PIN by the admin must choose their own PIN first.
    A subject that is not already in the portal's subject list (such as Biology) is added to the list automatically. ---------- */
@@ -49,8 +50,17 @@ ${x?`<div class=pn><h3>Redeemed: ${pups(x.amount)}</h3><p>Share this with a pare
 ${RD.l.length?`<h3>Redeemed so far</h3><div class=wrap><table><tr><th>Date<th>Puppies<th>For<th>Reference<th></tr>${RD.l.map((r,i)=>`<tr class=rdr><td>${new Date(r.date).toLocaleDateString('en-GB')}<td>${r.amount} 🐶<td>${esc(r.note||'')}<td>R-${r.id}<td><button class=g data-a=rdpick data-v=${i}>Share</button></tr>`).join('')}</table></div>`:''}</div>`);
 if(Date.now()-RD.t>15000){RD.t=Date.now();rdCall().then(j=>{if(j.status=='ok'){const b=RD.r+'|'+RD.l.length;rdTake(j);if(S.v=='dash'&&b!=RD.r+'|'+RD.l.length)render()}}).catch(()=>{})}}
 document.head.insertAdjacentHTML('beforeend','<style>.rdb{height:10px;border-radius:5px;background:rgba(0,0,0,.2);margin:6px 0;overflow:hidden}.rdb i{display:block;height:100%;background:#12703a}.rdl{display:flex;gap:6px 14px;flex-wrap:wrap;margin:0;font-size:.95rem}.stats .rdl b{display:inline;font-size:1.15rem}.big .rdr{opacity:.6}tr.rdr td{color:var(--mu)}.rdk{display:inline-block;padding:9px 15px;border-radius:10px;background:var(--pr);color:var(--on);font-weight:700;text-decoration:none;margin:6px 6px 0 0}</style>');
-const render1=render;render=function(){render1();sxMount();bkMount();rdMount()};
-const chk0=A.chk;
+/* ---------- Explain and Correction. Explain gives no hints: it is greyed out until the question is finished (answered correctly, or Correction used).
+   Correction shows the answer and the steps; Explain adds the reasoning behind the steps. ---------- */
+const exOpen=q=>!!(q&&(q.done||q.showCor));
+function exMount(){if(S.v!='test'||!S.t)return;const q=S.t.qs[S.t.i],b=$('#app [data-a=exp]');if(b){b.disabled=!exOpen(q);b.title=exOpen(q)?'':'Explain is available after Correction'}
+const st=w=>{const p=String(w||'').split(/;\s+/).filter(Boolean);return p.length>1?`<ol>${p.map(x=>`<li>${x}</li>`).join('')}</ol>`:`<p>${p[0]||''}</p>`};
+document.querySelectorAll('#app .pn').forEach(pn=>{const h=pn.querySelector('h3');if(!h)return;
+if(h.textContent=='Correction')pn.querySelectorAll('p').forEach(p=>{const t=p.querySelector('b');if(!t)return;if(t.textContent=='Method:')p.remove();else if(t.textContent=='Working:')p.outerHTML=`<p><b>Steps:</b></p>${st(q.w)}`});
+else if(h.textContent=='Explain')pn.innerHTML=`<h3>Explain</h3><p><b>The idea behind it:</b> ${q.m}</p><p><b>How the steps work:</b></p>${st(q.w)}<p><b>So the answer is:</b> ${esc(ans(q))}</p>`})}
+document.head.insertAdjacentHTML('beforeend','<style>button[data-a=exp]:disabled{opacity:.4;cursor:not-allowed}.pn ol{margin:.3em 0 .6em;padding-left:1.4em}.pn li{margin:.25em 0}</style>');
+const render1=render;render=function(){if(S.v=='test'&&S.t){const q=S.t.qs[S.t.i];if(q&&!exOpen(q))q.showEx=false}render1();sxMount();bkMount();rdMount();exMount()};
+const chk0=A.chk,exp0=A.exp;
 Object.assign(A,{async go(){if(S.busy)return;const n=$('#nm').value.trim(),p=$('#pn').value.trim(),s=$('#sb').value,pk=/^\d{4,8}$/.test(p),er=m=>{const e=$('#er');if(e)e.textContent=m};if(!n||!pk||!s){er(!n?'Enter your name to continue.':!pk?'Enter your PIN (4 to 8 digits).':'Select a subject to continue.');return}
 S.name=n;S.pin=p;S.ok=false;S.subj=s;S.busy=1;er('Signing in…');
 try{let j=await sync(pend());if(j.status=='unknown'){const c=prompt(`There is no student called "${n}" yet.\n\nTo create a new student, type the PIN again to confirm it:`);if(c===null){er('');return}if(c.trim()!==p){er('The two PINs did not match, so nothing was created. Try again.');return}j=await sync(pend(),1)}
@@ -58,6 +68,7 @@ if(j.status=='change_pin'){const a=prompt(`Welcome, ${n}! The PIN you were given
 const x=await fetch(SB+'/rest/v1/rpc/portal_sync',{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({p_name:n,p_pin:p,p_tests:pend(),p_new_pin:np})});if(!x.ok)throw new Error('sync');j=await x.json();if(j.status=='ok')S.pin=np}
 if(j.status!='ok'){er(j.status=='wrong_pin'?'That PIN does not match this name. Try again.':j.status=='locked'?'Too many wrong PINs. Wait 5 minutes, then try again.':'Could not sign in. Check the name and PIN.');return}
 take(j);S.ok=true;D.last=n;save();S.diff=-1;S.topic='';S.v='subj';render()}catch(e){er('Could not reach the server. Check the internet connection and try again.')}finally{S.busy=0}},
+exp(){if(exOpen(S.t&&S.t.qs[S.t.i]))exp0()},
 back(){if(!S.t||S.t.i<1)return;cap();S.t.i--;render()},
 async redeem(){if(S.busy)return;const B=Math.max(0,rdTot()-RD.r),E=m=>{const e=$('#rde');if(e)e.textContent=m};if(!B)return;
 const a=prompt(`You have ${pups(B)} to redeem.\n\nHow many Puppies would you like to redeem?`);if(a===null)return;const n=+a.trim();if(!/^\d+$/.test(a.trim())||n<1||n>B)return E(`Enter a whole number from 1 to ${B}.`);
