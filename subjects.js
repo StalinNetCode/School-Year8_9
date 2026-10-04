@@ -51,13 +51,15 @@ ${RD.l.length?`<h3>Redeemed so far</h3><div class=wrap><table><tr><th>Date<th>Pu
 if(Date.now()-RD.t>15000){RD.t=Date.now();rdCall().then(j=>{if(j.status=='ok'){const b=RD.r+'|'+RD.l.length;rdTake(j);if(S.v=='dash'&&b!=RD.r+'|'+RD.l.length)render()}}).catch(()=>{})}}
 document.head.insertAdjacentHTML('beforeend','<style>.rdb{height:10px;border-radius:5px;background:rgba(0,0,0,.2);margin:6px 0;overflow:hidden}.rdb i{display:block;height:100%;background:#12703a}.rdl{display:flex;gap:6px 14px;flex-wrap:wrap;margin:0;font-size:.95rem}.stats .rdl b{display:inline;font-size:1.15rem}.big .rdr{opacity:.6}tr.rdr td{color:var(--mu)}.rdk{display:inline-block;padding:9px 15px;border-radius:10px;background:var(--pr);color:var(--on);font-weight:700;text-decoration:none;margin:6px 6px 0 0}</style>');
 /* ---------- Explain and Correction. Explain gives no hints: it is greyed out until the question is finished (answered correctly, or Correction used).
-   Correction shows the answer and the steps; Explain adds the reasoning behind the steps. ---------- */
+   Correction shows the answer and the steps; Explain adds the reasoning behind the steps.
+   EXPL holds an explanation for each step of each calculation question type; it is filled by the explain.js file in a subject's folder. ---------- */
+const EXPL={},xk=m=>{let x=5381;for(const c of String(m).replace(/[\d.]+/g,'#'))x=(x*33^c.charCodeAt(0))>>>0;return x.toString(36)};
 const exOpen=q=>!!(q&&(q.done||q.showCor));
 function exMount(){if(S.v!='test'||!S.t)return;const q=S.t.qs[S.t.i],b=$('#app [data-a=exp]');if(b){b.disabled=!exOpen(q);b.title=exOpen(q)?'':'Explain is available after Correction'}
 const st=w=>{const p=String(w||'').split(/;\s+/).filter(Boolean);return p.length>1?`<ol>${p.map(x=>`<li>${x}</li>`).join('')}</ol>`:`<p>${p[0]||''}</p>`};
 document.querySelectorAll('#app .pn').forEach(pn=>{const h=pn.querySelector('h3');if(!h)return;
 if(h.textContent=='Correction')pn.querySelectorAll('p').forEach(p=>{const t=p.querySelector('b');if(!t)return;if(t.textContent=='Method:')p.remove();else if(t.textContent=='Working:')p.outerHTML=`<p><b>Steps:</b></p>${st(q.w)}`});
-else if(h.textContent=='Explain')pn.innerHTML=`<h3>Explain</h3><p><b>The idea behind it:</b> ${q.m}</p><p><b>How the steps work:</b></p>${st(q.w)}<p><b>So the answer is:</b> ${esc(ans(q))}</p>`})}
+else if(h.textContent=='Explain'){const p=String(q.w||'').split(/;\s+/).filter(Boolean),x=q.k=='nm'&&EXPL[xk(q.m)];pn.innerHTML=`<h3>Explain</h3><p><b>The idea behind it:</b> ${q.m}</p><p><b>How the steps work:</b></p>${x&&x.length==p.length?`<ol>${p.map((s,i)=>`<li><b>${s}</b><br>${x[i]}</li>`).join('')}</ol>`:st(q.w)}<p><b>So the answer is:</b> ${esc(ans(q))}</p>`}})}
 document.head.insertAdjacentHTML('beforeend','<style>button[data-a=exp]:disabled{opacity:.4;cursor:not-allowed}.pn ol{margin:.3em 0 .6em;padding-left:1.4em}.pn li{margin:.25em 0}</style>');
 const render1=render;render=function(){if(S.v=='test'&&S.t){const q=S.t.qs[S.t.i];if(q&&!exOpen(q))q.showEx=false}render1();sxMount();bkMount();rdMount();exMount()};
 const chk0=A.chk,exp0=A.exp;
@@ -82,7 +84,7 @@ mc(v){const i=$('#ans');if(!i||i.disabled)return;i.value=v;mcUI()},
 chk(){const q=S.t.qs[S.t.i];if(!q.k)return chk0();cap();if(q.done)return;if(!q.last){q.fb='Type an answer first, then press Check Answer.';q.ok=false;render();return}
 const g=mark(q,q.last);if(g.ok){q.ok=q.done=true;q.pts=PUP[S.diff];S.t.pup+=q.pts;q.fb=`Correct! 🎉 +${q.pts} ${q.pts>1?'Puppies':'Puppy'} 🐶`;cheer()}else{q.ok=false;q.fb=g.fb}render()}});
 const G10=`Use g = 10 N/kg.`;
-const LOAD={Physics:['forces','energy','electricity','magnetism','waves','matter','space','skills'],Chemistry:['particles','atoms','mixtures','reactions','acids','periodic','energy','materials','earth','skills'],Biology:['cells','transport','photosynthesis','respiration','digestion','reproduction','ecosystems','health','genetics','evolution','skills'],Spanish:['core','identity','freetime','school','travel','future','home','food','culture','environment','society','communication','grammar','vocabulary','practical'],English:['core','poetry','shakespeare','media','prose','creative','reading','writing','grammar','techniques','comparison','critical','speaking']};
+const LOAD={Physics:['forces','energy','electricity','magnetism','waves','matter','space','skills','explain'],Chemistry:['particles','atoms','mixtures','reactions','acids','periodic','energy','materials','earth','skills'],Biology:['cells','transport','photosynthesis','respiration','digestion','reproduction','ecosystems','health','genetics','evolution','skills'],Spanish:['core','identity','freetime','school','travel','future','home','food','culture','environment','society','communication','grammar','vocabulary','practical'],English:['core','poetry','shakespeare','media','prose','creative','reading','writing','grammar','techniques','comparison','critical','speaking']};
 for(const sj in LOAD){BANK[sj]={};if(!SUBJ.includes(sj))SUBJ.splice(SUBJ.indexOf('Chemistry')+1,0,sj);LOAD[sj].forEach(u=>{const s=document.createElement('script');s.src=sj.toLowerCase()+'/'+u+'.js';s.async=false;document.head.append(s)})}
 const sbx=$('#sb');if(sbx){const v=sbx.value;sbx.innerHTML='<option value="">Choose a subject…</option>'+SUBJ.map(s=>`<option>${s}</option>`).join('');sbx.value=v}
 if(S.v=='test')render();
