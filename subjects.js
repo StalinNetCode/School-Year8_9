@@ -9,6 +9,7 @@
      L(question, text)  turns any question into a listening question: a Listen button reads the text aloud in the subject's language.
    Typed answers are compared without accents, so "espanol" matches "español".
    Each topic is a separate file in a folder named after its subject (physics, chemistry, biology, spanish, english); the list is at the bottom of this file.
+   A "Previous question" button is added to every test (all subjects) so a student can look back at earlier questions.
    A subject that is not already in the portal's subject list (such as Biology) is added to the list automatically. ---------- */
 const N=(q,a,u,m,w)=>({q,a,d:`${f(a)}${u?' '+u:''}`,m,w,k:'nm'});
 const M=(q,o,m)=>{const c=o[0],opts=shuf(o.slice()),ci=opts.indexOf(c),L='ABCD'[ci];return{q,a:`${L}) ${c}`,d:`${L}) ${c}`,m,w:`The correct option is ${L}: ${c}.`,k:'mc',opts,ci}};
@@ -30,9 +31,11 @@ if(q.k=='tx')i.placeholder='Type your answer in your own words';
 if(q.k=='mc'){const p=$('#app p.q');if(p)p.insertAdjacentHTML('afterend',`<div class=mcs>${q.opts.map((o,n)=>`<button class="chip mc" data-a=mc data-v=${'ABCD'[n]} ${q.done?'disabled':''}><b>${'ABCD'[n]}</b> ${o}</button>`).join('')}</div>`);i.placeholder='Type A, B, C or D';i.oninput=mcUI;mcUI()}
 if(q.say){const p=$('#app p.q');if(p)p.insertAdjacentHTML('afterend',`<p><button class=g data-a=say>🔊 Listen</button><button class=g data-a=saytx>Cannot hear it? Show the text</button></p><p class=mu id=saytx hidden>${q.say}</p>`)}}
 document.head.insertAdjacentHTML('beforeend','<style>.mcs{display:grid;gap:8px;margin:10px 0}.mc{width:100%;font-weight:400}.mc b{margin-right:8px}.mc.right{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok);opacity:1}</style>');
-const render1=render;render=function(){render1();sxMount()};
+function bkMount(){if(S.v!='test'||!S.t||S.t.i<1)return;const i=$('#ans'),c=i&&i.closest('.card');if(!c)return;const n=c.querySelector('[data-a=next]'),b='<button class=g data-a=back>← Previous question</button>';if(n)n.insertAdjacentHTML('beforebegin',b);else c.insertAdjacentHTML('beforeend',b)}
+const render1=render;render=function(){render1();sxMount();bkMount()};
 const chk0=A.chk;
-Object.assign(A,{say(){try{const u=new SpeechSynthesisUtterance(S.t.qs[S.t.i].say);u.lang=({Spanish:'es-ES',French:'fr-FR'})[S.subj]||'en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){A.saytx()}},saytx(){const e=$('#saytx');if(e)e.hidden=false},
+Object.assign(A,{back(){if(!S.t||S.t.i<1)return;cap();S.t.i--;render()},
+say(){try{const u=new SpeechSynthesisUtterance(S.t.qs[S.t.i].say);u.lang=({Spanish:'es-ES',French:'fr-FR'})[S.subj]||'en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){A.saytx()}},saytx(){const e=$('#saytx');if(e)e.hidden=false},
 mc(v){const i=$('#ans');if(!i||i.disabled)return;i.value=v;mcUI()},
 chk(){const q=S.t.qs[S.t.i];if(!q.k)return chk0();cap();if(q.done)return;if(!q.last){q.fb='Type an answer first, then press Check Answer.';q.ok=false;render();return}
 const g=mark(q,q.last);if(g.ok){q.ok=q.done=true;q.pts=PUP[S.diff];S.t.pup+=q.pts;q.fb=`Correct! 🎉 +${q.pts} ${q.pts>1?'Puppies':'Puppy'} 🐶`;cheer()}else{q.ok=false;q.fb=g.fb}render()}});
