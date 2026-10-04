@@ -10,6 +10,7 @@
    Typed answers are compared without accents, so "espanol" matches "español".
    Each topic is a separate file in a folder named after its subject (physics, chemistry, biology, spanish, english); the list is at the bottom of this file.
    A "Previous question" button is added to every test (all subjects) so a student can look back at earlier questions.
+   Sign-in (A.go) is replaced here so that a student who was given a temporary PIN by the admin must choose their own PIN first.
    A subject that is not already in the portal's subject list (such as Biology) is added to the list automatically. ---------- */
 const N=(q,a,u,m,w)=>({q,a,d:`${f(a)}${u?' '+u:''}`,m,w,k:'nm'});
 const M=(q,o,m)=>{const c=o[0],opts=shuf(o.slice()),ci=opts.indexOf(c),L='ABCD'[ci];return{q,a:`${L}) ${c}`,d:`${L}) ${c}`,m,w:`The correct option is ${L}: ${c}.`,k:'mc',opts,ci}};
@@ -34,7 +35,14 @@ document.head.insertAdjacentHTML('beforeend','<style>.mcs{display:grid;gap:8px;m
 function bkMount(){if(S.v!='test'||!S.t||S.t.i<1)return;const i=$('#ans'),c=i&&i.closest('.card');if(!c)return;const n=c.querySelector('[data-a=next]'),b='<button class=g data-a=back>← Previous question</button>';if(n)n.insertAdjacentHTML('beforebegin',b);else c.insertAdjacentHTML('beforeend',b)}
 const render1=render;render=function(){render1();sxMount();bkMount()};
 const chk0=A.chk;
-Object.assign(A,{back(){if(!S.t||S.t.i<1)return;cap();S.t.i--;render()},
+Object.assign(A,{async go(){if(S.busy)return;const n=$('#nm').value.trim(),p=$('#pn').value.trim(),s=$('#sb').value,pk=/^\d{4,8}$/.test(p),er=m=>{const e=$('#er');if(e)e.textContent=m};if(!n||!pk||!s){er(!n?'Enter your name to continue.':!pk?'Enter your PIN (4 to 8 digits).':'Select a subject to continue.');return}
+S.name=n;S.pin=p;S.ok=false;S.subj=s;S.busy=1;er('Signing in…');
+try{let j=await sync(pend());if(j.status=='unknown'){const c=prompt(`There is no student called "${n}" yet.\n\nTo create a new student, type the PIN again to confirm it:`);if(c===null){er('');return}if(c.trim()!==p){er('The two PINs did not match, so nothing was created. Try again.');return}j=await sync(pend(),1)}
+if(j.status=='change_pin'){const a=prompt(`Welcome, ${n}! The PIN you were given is temporary.\n\nChoose your own new PIN (4 to 8 digits) and keep it secret:`);if(a===null){er('Choose a new PIN to continue. Press Continue to try again.');return}const np=a.trim();if(!/^\d{4,8}$/.test(np)||np==p){er(np==p?'Your new PIN must be different from the temporary one. Press Continue to try again.':'A PIN must be 4 to 8 digits. Press Continue to try again.');return}const b=prompt('Type your new PIN again to confirm it:');if(b===null||b.trim()!==np){er('The two PINs did not match, so your PIN was not changed. Press Continue to try again.');return}
+const x=await fetch(SB+'/rest/v1/rpc/portal_sync',{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({p_name:n,p_pin:p,p_tests:pend(),p_new_pin:np})});if(!x.ok)throw new Error('sync');j=await x.json();if(j.status=='ok')S.pin=np}
+if(j.status!='ok'){er(j.status=='wrong_pin'?'That PIN does not match this name. Try again.':j.status=='locked'?'Too many wrong PINs. Wait 5 minutes, then try again.':'Could not sign in. Check the name and PIN.');return}
+take(j);S.ok=true;D.last=n;save();S.diff=-1;S.topic='';S.v='subj';render()}catch(e){er('Could not reach the server. Check the internet connection and try again.')}finally{S.busy=0}},
+back(){if(!S.t||S.t.i<1)return;cap();S.t.i--;render()},
 say(){try{const u=new SpeechSynthesisUtterance(S.t.qs[S.t.i].say);u.lang=({Spanish:'es-ES',French:'fr-FR'})[S.subj]||'en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){A.saytx()}},saytx(){const e=$('#saytx');if(e)e.hidden=false},
 mc(v){const i=$('#ans');if(!i||i.disabled)return;i.value=v;mcUI()},
 chk(){const q=S.t.qs[S.t.i];if(!q.k)return chk0();cap();if(q.done)return;if(!q.last){q.fb='Type an answer first, then press Check Answer.';q.ok=false;render();return}
