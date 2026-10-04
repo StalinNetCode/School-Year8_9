@@ -10,6 +10,7 @@
    Typed answers are compared without accents, so "espanol" matches "español".
    Each topic is a separate file in a folder named after its subject (physics, chemistry, biology, spanish, english); the list is at the bottom of this file.
    A "Previous question" button is added to every test (all subjects) so a student can look back at earlier questions.
+   The dashboard gains a Redeem Puppies section: total earned, balance and redeemed are shown, with links to share a redemption.
    Sign-in (A.go) is replaced here so that a student who was given a temporary PIN by the admin must choose their own PIN first.
    A subject that is not already in the portal's subject list (such as Biology) is added to the list automatically. ---------- */
 const N=(q,a,u,m,w)=>({q,a,d:`${f(a)}${u?' '+u:''}`,m,w,k:'nm'});
@@ -33,7 +34,22 @@ if(q.k=='mc'){const p=$('#app p.q');if(p)p.insertAdjacentHTML('afterend',`<div c
 if(q.say){const p=$('#app p.q');if(p)p.insertAdjacentHTML('afterend',`<p><button class=g data-a=say>🔊 Listen</button><button class=g data-a=saytx>Cannot hear it? Show the text</button></p><p class=mu id=saytx hidden>${q.say}</p>`)}}
 document.head.insertAdjacentHTML('beforeend','<style>.mcs{display:grid;gap:8px;margin:10px 0}.mc{width:100%;font-weight:400}.mc b{margin-right:8px}.mc.right{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok);opacity:1}</style>');
 function bkMount(){if(S.v!='test'||!S.t||S.t.i<1)return;const i=$('#ans'),c=i&&i.closest('.card');if(!c)return;const n=c.querySelector('[data-a=next]'),b='<button class=g data-a=back>← Previous question</button>';if(n)n.insertAdjacentHTML('beforebegin',b);else c.insertAdjacentHTML('beforeend',b)}
-const render1=render;render=function(){render1();sxMount();bkMount()};
+/* ---------- Redeem Puppies (dashboard). Redemptions are stored in the database by portal_redeem; the total earned never goes down. ---------- */
+let RD={k:'',r:0,l:[],t:0,sh:null};
+const rdCall=async(a,nt)=>{const n=S.name,x=await fetch(SB+'/rest/v1/rpc/portal_redeem',{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({p_name:n,p_pin:S.pin,p_amount:a||0,p_note:nt||null})});if(!x.ok||n!==S.name)throw new Error('rd');return x.json()};
+const rdTake=j=>{RD.k=S.name;RD.r=j.redeemed||0;RD.l=j.list||[];RD.t=Date.now()};
+const pups=n=>`${n} ${n==1?'Puppy':'Puppies'}`;
+const rdTot=()=>mine().reduce((s,t)=>s+(t.puppies||0),0);
+const rdMsg=x=>`🐶 ${S.name} has redeemed ${pups(x.amount)} on the Year 8 & 9 Practice Portal${x.note?` for: ${x.note}`:''}.\nDate: ${new Date(x.date).toLocaleDateString('en-GB')}\nReference: R-${x.id}`;
+function rdMount(){if(S.v!='dash'||!S.ok)return;const big=$('#app .stats .big'),st=$('#app .stats');if(!big||!st)return;if(RD.k!=S.name)RD={k:S.name,r:0,l:[],t:0,sh:null};
+const P=rdTot(),R=RD.r,B=Math.max(0,P-R),x=RD.sh,m=x?encodeURIComponent(rdMsg(x)):'';
+big.innerHTML=`<span>🐶 Total Puppies earned</span><b>${P}</b><div class=rdb title="Balance ${B}, redeemed ${R}"><i style="width:${P?B/P*100:0}%"></i></div><p class=rdl><span>Balance: <b>${B}</b></span><span class=rdr>Redeemed: ${R}</span></p>`;
+st.insertAdjacentHTML('afterend',`<div class=card><h2>Redeem Puppies</h2><p>You have <b>${pups(B)}</b> to redeem.${R?` <span class=mu>(${pups(R)} already redeemed out of ${P} earned.)</span>`:''}</p><button data-a=redeem ${B?'':'disabled'}>🎁 Redeem Puppies</button><p class=err id=rde></p>
+${x?`<div class=pn><h3>Redeemed: ${pups(x.amount)}</h3><p>Share this with a parent or teacher so they know:</p><p><a class=rdk href="https://wa.me/?text=${m}" target=_blank rel=noopener>WhatsApp</a><a class=rdk href="mailto:?subject=${encodeURIComponent(`${S.name} has redeemed ${pups(x.amount)}`)}&body=${m}">Email</a>${navigator.share?'<button class=g data-a=rdshare>Share another way</button>':''}<button class=g data-a=rdcopy>Copy message</button></p><p class=mu>${esc(rdMsg(x)).replace(/\n/g,'<br>')}</p></div>`:''}
+${RD.l.length?`<h3>Redeemed so far</h3><div class=wrap><table><tr><th>Date<th>Puppies<th>For<th>Reference<th></tr>${RD.l.map((r,i)=>`<tr class=rdr><td>${new Date(r.date).toLocaleDateString('en-GB')}<td>${r.amount} 🐶<td>${esc(r.note||'')}<td>R-${r.id}<td><button class=g data-a=rdpick data-v=${i}>Share</button></tr>`).join('')}</table></div>`:''}</div>`);
+if(Date.now()-RD.t>15000){RD.t=Date.now();rdCall().then(j=>{if(j.status=='ok'){const b=RD.r+'|'+RD.l.length;rdTake(j);if(S.v=='dash'&&b!=RD.r+'|'+RD.l.length)render()}}).catch(()=>{})}}
+document.head.insertAdjacentHTML('beforeend','<style>.rdb{height:10px;border-radius:5px;background:rgba(0,0,0,.2);margin:6px 0;overflow:hidden}.rdb i{display:block;height:100%;background:#12703a}.rdl{display:flex;gap:6px 14px;flex-wrap:wrap;margin:0;font-size:.95rem}.stats .rdl b{display:inline;font-size:1.15rem}.big .rdr{opacity:.6}tr.rdr td{color:var(--mu)}.rdk{display:inline-block;padding:9px 15px;border-radius:10px;background:var(--pr);color:var(--on);font-weight:700;text-decoration:none;margin:6px 6px 0 0}</style>');
+const render1=render;render=function(){render1();sxMount();bkMount();rdMount()};
 const chk0=A.chk;
 Object.assign(A,{async go(){if(S.busy)return;const n=$('#nm').value.trim(),p=$('#pn').value.trim(),s=$('#sb').value,pk=/^\d{4,8}$/.test(p),er=m=>{const e=$('#er');if(e)e.textContent=m};if(!n||!pk||!s){er(!n?'Enter your name to continue.':!pk?'Enter your PIN (4 to 8 digits).':'Select a subject to continue.');return}
 S.name=n;S.pin=p;S.ok=false;S.subj=s;S.busy=1;er('Signing in…');
@@ -43,6 +59,13 @@ const x=await fetch(SB+'/rest/v1/rpc/portal_sync',{method:'POST',headers:{'Conte
 if(j.status!='ok'){er(j.status=='wrong_pin'?'That PIN does not match this name. Try again.':j.status=='locked'?'Too many wrong PINs. Wait 5 minutes, then try again.':'Could not sign in. Check the name and PIN.');return}
 take(j);S.ok=true;D.last=n;save();S.diff=-1;S.topic='';S.v='subj';render()}catch(e){er('Could not reach the server. Check the internet connection and try again.')}finally{S.busy=0}},
 back(){if(!S.t||S.t.i<1)return;cap();S.t.i--;render()},
+async redeem(){if(S.busy)return;const B=Math.max(0,rdTot()-RD.r),E=m=>{const e=$('#rde');if(e)e.textContent=m};if(!B)return;
+const a=prompt(`You have ${pups(B)} to redeem.\n\nHow many Puppies would you like to redeem?`);if(a===null)return;const n=+a.trim();if(!/^\d+$/.test(a.trim())||n<1||n>B)return E(`Enter a whole number from 1 to ${B}.`);
+const nt=prompt(`Press OK to redeem ${pups(n)}, or Cancel to stop. This cannot be undone.\n\nYou can also type what you are redeeming them for:`);if(nt===null)return;S.busy=1;E('Redeeming…');
+try{if(pend().length){const s=await sync(pend());if(s.status=='ok')take(s)}const j=await rdCall(n,nt.trim());S.busy=0;if(j.status=='ok'){rdTake(j);RD.sh=RD.l.find(r=>r.id==j.new_id)||RD.l[0];render()}else E(j.status=='too_many'?`You can redeem up to ${j.earned-j.redeemed} right now. Try again.`:'Could not redeem. Sign out, sign in again and try once more.')}catch(e){S.busy=0;E('Could not reach the server. Check the internet connection and try again.')}},
+rdpick(v){RD.sh=RD.l[+v];render()},
+rdshare(){try{navigator.share({text:rdMsg(RD.sh)}).catch(()=>{})}catch(e){}},
+rdcopy(){const t=rdMsg(RD.sh),E=m=>{const e=$('#rde');if(e)e.textContent=m};try{navigator.clipboard.writeText(t).then(()=>E('Message copied.'),()=>prompt('Copy this message:',t))}catch(e){prompt('Copy this message:',t)}},
 say(){try{const u=new SpeechSynthesisUtterance(S.t.qs[S.t.i].say);u.lang=({Spanish:'es-ES',French:'fr-FR'})[S.subj]||'en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){A.saytx()}},saytx(){const e=$('#saytx');if(e)e.hidden=false},
 mc(v){const i=$('#ans');if(!i||i.disabled)return;i.value=v;mcUI()},
 chk(){const q=S.t.qs[S.t.i];if(!q.k)return chk0();cap();if(q.done)return;if(!q.last){q.fb='Type an answer first, then press Check Answer.';q.ok=false;render();return}
