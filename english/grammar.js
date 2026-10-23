@@ -10,17 +10,22 @@ wcT=()=>{const [s,c]=pick(WC);return T(`Name the word class of the word in CAPIT
 hom=()=>{const [s,a,k]=pick(HOM);return T(`Fill in the blank with the correct word: "${s}"`,[k],a,`Think about the meaning: for example, "it's" means "it is", while "its" shows belonging.`)},
 se=()=>{const [b,g,k]=pick(SE);return T(`Rewrite this sentence in Standard English: "${b}"`,[k],g,`Standard English is the form used in formal writing.`)};
 BANK.English['Grammar & vocabulary']=[
-/* Easy */[mcDef(W1),wc,name(W1),
+/* Easy */[mcDef(W1),
+wc,
+name(W1),
 one(()=>M(`Which sentence is punctuated correctly?`,[`My sister lives in London.`,`my sister lives in london.`,`My sister lives in london`,`My Sister Lives In London.`],`A sentence starts with a capital letter and ends with a full stop; proper nouns have capitals.`),
 ()=>M(`Which sentence is a question?`,[`Where are you going?`,`I am going out.`,`Go away!`,`What a lovely day!`],`A question asks for information and ends with a question mark.`),
 ()=>M(`Which word is a synonym of "happy"?`,[`cheerful`,`miserable`,`angry`,`tired`],`A synonym has a similar meaning.`),
 ()=>M(`Which word is an antonym of "ancient"?`,[`modern`,`old`,`antique`,`historic`],`An antonym has the opposite meaning.`))],
-/* Moderate */[wcT,hom,mcDef(W2),
+/* Moderate */[wcT,
+hom,
+mcDef(W2),
 one(()=>M(`Which sentence uses an apostrophe correctly?`,[`The dog's bowl is empty.`,`The dog's are barking.`,`The dogs bowl' is empty.`,`The dogs' is barking.`],`The apostrophe shows that the bowl belongs to the dog.`),
 ()=>M(`Which sentence uses commas correctly in a list?`,[`I bought apples, pears, plums and grapes.`,`I bought, apples pears plums and grapes.`,`I bought apples pears, plums and, grapes.`,`I, bought apples pears plums and grapes.`],`Commas separate the items in a list.`),
 ()=>M(`Which sentence punctuates speech correctly?`,[`"Come here," said Mum.`,`"Come here", said Mum.`,`Come here, "said Mum."`,`"Come here said Mum."`],`The comma goes inside the closing speech mark.`),
 ()=>M(`In "the girls' coats", the apostrophe after the s shows that…`,[`the coats belong to more than one girl`,`one girl owns the coats`,`a letter is missing`,`it is a mistake`],`For a plural ending in s, the apostrophe goes after the s.`))],
-/* Difficult */[se,name(W2),hom,
+/* Difficult */[se,
+name(W2),
 one(()=>M(`"Although it was late, we carried on walking." What type of sentence is this?`,[`complex`,`simple`,`compound`,`a fragment`],`It has a subordinate clause ("Although it was late") and a main clause.`),
 ()=>M(`"I knocked, but nobody answered." What type of sentence is this?`,[`compound`,`simple`,`complex`,`a fragment`],`Two main clauses are joined by "but".`),
 ()=>M(`Which sentence is in the passive voice?`,[`The window was broken by the ball.`,`The ball broke the window.`,`The ball is breaking the window.`,`The ball will break the window.`],`In the passive, the thing affected comes first.`),
@@ -28,8 +33,7 @@ one(()=>M(`"Although it was late, we carried on walking." What type of sentence 
 one(()=>M(`Which sentence uses a semicolon correctly?`,[`The rain stopped; the sun came out.`,`The rain; stopped the sun came out.`,`The rain stopped the; sun came out.`,`The; rain stopped, the sun came out.`],`A semicolon joins two closely related main clauses.`),
 ()=>M(`Which sentence uses a colon correctly?`,[`She packed three things: a torch, a map and a rope.`,`She: packed three things a torch, a map and a rope.`,`She packed: three things a torch a map and a rope.`,`She packed three: things, a torch, a map and a rope.`],`A colon introduces a list after a complete clause.`),
 ()=>M(`Which is correct?`,[`There are fewer cars on the road today.`,`There are less cars on the road today.`,`There is fewer cars on the road today.`,`There are fewest cars on the road today.`],`"Fewer" is used for things you can count; "less" for things you cannot.`))],
-/* Very Difficult */[se,wcT,
-one(()=>M(`In "Running is good exercise", the word "Running" is used as a…`,[`noun`,`verb`,`adjective`,`adverb`],`It is the subject of the sentence, naming an activity.`),
+/* Very Difficult */[one(()=>M(`In "Running is good exercise", the word "Running" is used as a…`,[`noun`,`verb`,`adjective`,`adverb`],`It is the subject of the sentence, naming an activity.`),
 ()=>M(`In "the running water", the word "running" is used as…`,[`an adjective`,`a noun`,`a verb`,`an adverb`],`It describes the noun "water".`),
 ()=>M(`Which sentence contains a relative clause?`,[`The boy who lives next door plays the drums.`,`The boy plays the drums loudly.`,`The boy plays the drums and sings.`,`Play the drums!`],`"Who lives next door" gives more information about the boy.`),
 ()=>M(`Which sentence contains a fronted adverbial?`,[`Before sunrise, the farmer was already at work.`,`The farmer was already at work.`,`The farmer worked before sunrise.`,`The farmer, tired, worked on.`],`The adverbial comes at the front and is followed by a comma.`)),
@@ -40,4 +44,5 @@ one(()=>M(`What does the prefix "mis-" mean in "misunderstand"?`,[`wrongly`,`aga
 ()=>M(`Which word means "having more than one possible meaning"?`,[`ambiguous`,`anonymous`,`ambitious`,`ambidextrous`],`An ambiguous sentence can be understood in two ways.`),
 ()=>M(`Which sentence uses "effect" or "affect" correctly?`,[`The speech had a powerful effect on the crowd.`,`The speech had a powerful affect on the crowd.`,`The speech will effect the crowd deeply.`,`The crowd was effected by the speech.`],`"Effect" is usually a noun; "affect" is usually a verb.`),
 ()=>M(`Which sentence avoids a comma splice?`,[`It was late, so we went home.`,`It was late, we went home.`,`It was late we, went home.`,`It, was late we went home.`],`Two main clauses cannot be joined by a comma alone.`)),
-mcTerm(W2)]]})();
+mcTerm(W2)]
+]})();

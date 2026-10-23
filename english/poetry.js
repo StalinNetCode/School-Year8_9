@@ -5,24 +5,28 @@ W2=[['enjambment','a sentence running on from one line to the next without a pau
 EX=[['The moon was a silver coin tossed into the dark.','metaphor','The moon is described as if it IS a coin.'],['Her laughter rang out like a bell across the field.','simile','"Like" signals a comparison.'],['The wind whispered its secrets to the trees.','personification','The wind is given a human action.'],['Big bold banners billowed in the breeze.','alliteration','The "b" sound is repeated at the start of the words.'],['The drums went boom and the cymbals crashed.','onomatopoeia','"Boom" and "crashed" sound like the noises they describe.'],['I have told you a million times.','hyperbole','It is an obvious exaggeration for effect.',' hyperbole| exaggerat'],['Never again. Never again. Never again will we march.','repetition','The same words are repeated for emphasis.',' repetition| repeat| anaphora'],['The silence was deafening.','oxymoron','Two opposite ideas are placed side by side.',' oxymoron| paradox']],
 P1=`The field that drank the thunder of the guns / now lifts a thousand poppies to the sun; / where boots once sank, the quiet river runs, / and no one counts the battles lost or won.`;
 BANK.English['Poetry']=[
-/* Easy */[mcDef(W1),mcTerm(W1),mcEx(EX),
+/* Easy */[mcDef(W1),
+mcTerm(W1),
+mcEx(EX),
 one(()=>M(`How many lines are there in a sonnet?`,[`14`,`12`,`10`,`16`],`A sonnet always has fourteen lines.`),
 ()=>M(`Lines 1 and 3 of a stanza rhyme, and lines 2 and 4 rhyme. What is the rhyme scheme?`,[`ABAB`,`AABB`,`ABBA`,`ABCD`],`Each new rhyme sound is given the next letter of the alphabet.`),
 ()=>M(`Which pair of words is a full rhyme?`,[`night / light`,`home / come`,`love / move`,`cough / through`],`The others look alike but do not sound alike.`))],
-/* Moderate */[name(W1),mcDef(W2),nameEx(EX),
+/* Moderate */[name(W1),
+mcDef(W2),
+nameEx(EX),
 one(()=>M(`Many poems written by soldiers in the First World War, such as those of Wilfred Owen, aimed to…`,[`show the horror and suffering of war`,`encourage young men to enlist`,`celebrate a great victory`,`describe the countryside`],`Owen wrote from the trenches to tell the truth about what soldiers endured.`),
 ()=>M(`A poem that tells a story, often in short rhyming stanzas, is called a…`,[`ballad`,`haiku`,`sonnet`,`limerick`],`Ballads were traditionally sung or recited.`),
 ()=>N(`A traditional haiku has three lines of 5, 7 and 5 syllables. How many syllables is that altogether?`,17,`syllables`,`Add the syllables in the three lines.`,`5 + 7 + 5 = 17`),
 ()=>M(`The "speaker" of a poem is…`,[`the voice that narrates the poem, which may not be the poet`,`always the poet`,`the person reading the poem aloud`,`the publisher`],`Poets often write in the voice of an invented character.`))],
-/* Difficult */[name(W2),mcTerm(W2),
+/* Difficult */[name(W2),
+mcTerm(W2),
 one(ex(`A poet writes: "The soldiers trudged home like broken clockwork toys." Explain what this simile suggests about the soldiers.`,[`tired|exhaust|broken|damag|worn|weak|lifeless|mechanical|slow|no energy|hurt|injur|stiff`],`It suggests the soldiers are exhausted and damaged, moving stiffly and without life, as if the war has broken them.`),
 ex(`A poem about peace ends: "and the guns, at last, forgot their names." What is the effect of this personification?`,[`silen|quiet|stop|end|peace|over|calm|fad|forgot`],`Giving the guns the human ability to forget suggests the fighting has ended completely and the violence is fading from memory, creating a calm mood.`),
 ex(`Why might a poet use enjambment in a poem about a river?`,[`flow|continu|run|movement|moving|pace|speed|smooth`],`The lines run on without a pause, which mirrors the continuous flow of the water.`)),
 one(()=>M(`A poem has short, broken lines with many full stops. This structure is most likely to create a feeling of…`,[`tension or fragmentation`,`calm, flowing peace`,`humour`,`boredom`],`Frequent pauses break up the rhythm.`),
 ()=>M(`A steady rhythm and regular rhyme in a poem about marching soldiers might reflect…`,[`the steady beat of marching feet`,`the chaos of battle`,`the silence of night`,`the poet's lack of ideas`],`Form can mirror the subject of a poem.`),
 ()=>M(`The final couplet of a Shakespearean sonnet often…`,[`sums up the argument or gives it a twist`,`introduces a new character`,`repeats the first line`,`has no rhyme`],`The last two lines rhyme and give the poem a strong ending.`))],
-/* Very Difficult */[
-one(rd(P1,`What contrast does the poet create?`,[`between the violence of the past and the peace of the present`,`between rich and poor`,`between town and country`,`between youth and old age`],`The first and third lines recall war; the second and fourth show peace.`),
+/* Very Difficult */[one(rd(P1,`What contrast does the poet create?`,[`between the violence of the past and the peace of the present`,`between rich and poor`,`between town and country`,`between youth and old age`],`The first and third lines recall war; the second and fourth show peace.`),
 rd(P1,`Which techniques are used in "The field that drank the thunder of the guns"?`,[`personification and metaphor`,`simile and rhyme`,`onomatopoeia and simile`,`a rhetorical question`],`The field "drinks" (personification) and the gunfire is called "thunder" (metaphor).`),
 rd(P1,`What is the rhyme scheme of these four lines?`,[`ABAB`,`AABB`,`ABBA`,`ABCB`],`"Guns" rhymes with "runs" and "sun" with "won".`)),
 one(ex(`A poet presents war as glorious in the first stanza and as horrific in the last. Explain the effect of this structure.`,[`contrast|chang|shift|shock|turn|juxtapos|differ`],`The contrast shocks the reader: the early glory is exposed as an illusion once the reality of war is shown.`),
@@ -30,4 +34,5 @@ ex(`Explain how writing in the first person ("I") can affect the reader of a war
 ex(`One poem about a battle uses a bouncy rhythm and regular rhyme; another uses free verse with broken lines. What might the second poet's form suggest about their view of the battle?`,[`chaos|horror|broken|suffer|confus|negative|pain|critic|disorder|destruct`],`The broken, irregular form suggests chaos and suffering, implying a critical view of the battle.`)),
 one(()=>N(`A sonnet has 14 lines of iambic pentameter, with 10 syllables in each line. How many syllables are there in the whole poem?`,140,`syllables`,`Multiply the number of lines by the syllables in each line.`,`14 × 10 = 140`),
 ()=>{const n=r(2,6);return N(`A poem is made of ${n} quatrains followed by one couplet. How many lines does it have?`,4*n+2,`lines`,`A quatrain has four lines and a couplet has two.`,`${n} × 4 + 2 = ${4*n+2}`)}),
-nameEx(EX)]]})();
+ex(`The poem moves from images of war in lines 1 and 3 to images of peace in lines 2 and 4. Evaluate how effective this alternating structure is for the poem's meaning.`,[`contrast|juxtapos|mirror|reflect|highlight|emphas|tension|balance|shift|alternat`],`The alternating structure keeps setting war and peace directly against each other line by line, which sharpens the contrast and reinforces the idea that the peaceful present grows directly out of the violent past.`)]
+]})();

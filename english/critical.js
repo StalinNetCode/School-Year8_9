@@ -7,20 +7,21 @@ purT=()=>{const [t,p]=pick(PUR);return T(`What is the main purpose of this text?
 X1=`"Everyone knows that teenagers are lazy. My neighbour's son sleeps until noon every Saturday. Clearly, schools should start earlier to teach them discipline."`,
 X2=`"A study of 8,000 pupils in 40 schools found that those who started lessons at 10 a.m. scored, on average, 12% higher in tests. The researchers suggest that teenagers' body clocks run later than adults'. However, they note that the schools involved were all in cities."`;
 BANK.English['Critical thinking']=[
-/* Easy */[mcDef(W1),pur,mcTerm(W1),
+/* Easy */[mcDef(W1),
+pur,
+mcTerm(W1),
 one(()=>M(`Who is the most likely audience for a picture book about a lost teddy?`,[`young children`,`teenagers`,`business people`,`scientists`],`The subject and the pictures suggest young readers.`),
 ()=>M(`Who is the most likely audience for an article called "Five Tips for Your First Job Interview"?`,[`young adults looking for work`,`toddlers`,`retired people`,`primary school pupils`],`The topic tells you who the writer has in mind.`),
 ()=>M(`Which statement is an opinion?`,[`Cats make better pets than dogs.`,`Cats are mammals.`,`Cats have four legs.`,`Some cats live for twenty years.`],`"Better" is a judgement that cannot be proved.`))],
-/* Moderate */[name(W1),purT,
+/* Moderate */[name(W1),
+purT,
 one(()=>M(`A website selling vitamin pills says they "boost brain power". Why should a reader be cautious?`,[`The seller benefits if you believe it, so it may be biased`,`Websites are always wrong`,`Vitamins do not exist`,`It is written in English`],`Always ask who wrote a text and why.`),
 ()=>M(`Which source is likely to be most reliable for facts about a disease?`,[`a national health service website`,`an anonymous social media post`,`an advert for a "miracle cure"`,`a comment under a video`],`Reliable sources are expert, accountable and not selling something.`),
 ()=>M(`"All teenagers love loud music." This statement is…`,[`a generalisation`,`a statistic`,`a quotation`,`a proven fact`],`It claims something about every member of a group without evidence.`)),
 one(()=>M(`A novel written in 1850 shows women with few rights. Knowing about Victorian society helps the reader to…`,[`understand why the characters behave as they do`,`correct the author's spelling`,`skip the difficult chapters`,`prove that the novel is true`],`Context explains the attitudes and events in a text.`),
 ()=>M(`Two readers disagree about whether a character is a hero or a villain. This shows that…`,[`texts can have more than one valid interpretation`,`one reader has not read the book`,`the author made a mistake`,`the book has no meaning`],`An interpretation is valid if it is supported by evidence from the text.`),
-()=>M(`How should a writer's choice of language change for a younger audience?`,[`simpler vocabulary and shorter sentences`,`longer words and no pictures`,`more technical terms`,`no change at all`],`Writers adapt to suit the audience.`)),
-mcDef(W1)],
-/* Difficult */[
-one(rd(X1,`What is the main weakness of this argument?`,[`It generalises from a single example`,`It uses too many statistics`,`It is too long`,`It quotes too many experts`],`One neighbour's son cannot prove something about all teenagers.`),
+()=>M(`How should a writer's choice of language change for a younger audience?`,[`simpler vocabulary and shorter sentences`,`longer words and no pictures`,`more technical terms`,`no change at all`],`Writers adapt to suit the audience.`))],
+/* Difficult */[one(rd(X1,`What is the main weakness of this argument?`,[`It generalises from a single example`,`It uses too many statistics`,`It is too long`,`It quotes too many experts`],`One neighbour's son cannot prove something about all teenagers.`),
 rd(X1,`"Everyone knows that…" is a weak way to support a claim because…`,[`it gives no actual evidence`,`it is too formal`,`it is a statistic`,`it is a quotation`],`Saying everyone agrees does not make a claim true.`),
 rd(X1,`Does the conclusion follow logically from the evidence?`,[`No: sleeping late on Saturday does not show that earlier school would help`,`Yes: the evidence proves it`,`Yes: the neighbour is an expert`,`It is impossible to say anything`],`The conclusion does not follow from the example given.`)),
 one(rd(X2,`Why is this argument stronger than one based on a single example?`,[`It uses evidence from a large study`,`It uses emotive language`,`It is shorter`,`It includes a joke`],`Thousands of pupils in many schools give more reliable evidence.`),
@@ -29,9 +30,10 @@ rd(X2,`Why does mentioning this limitation make the text more trustworthy?`,[`It
 one(ex(`Explain what is meant by "bias" in a text.`,[`one side|one-sided|unfair|favour|prejudic|partial|slant|not balanced|unbalanced|lean`],`Bias is when a text unfairly favours one side and does not give a balanced view.`),
 ex(`Give one question you should ask to judge whether a source is reliable.`,[`who|when|why|where|author|evidence|purpose|date|expert|source|bias|sell|proof|trust`],`For example: Who wrote it, and are they an expert? Why was it written? What evidence does it give? When was it written?`),
 ex(`Why is it useful to know when a text was written?`,[`context|attitude|belief|time|society|histor|different|chang|value|understand|views`],`The time it was written shapes the writer's attitudes and beliefs, so knowing the context helps us understand the text.`)),
-pur],
-/* Very Difficult */[
-one(ex(`"Nine out of ten dentists recommend this toothpaste." Give one question a critical reader should ask about this claim.`,[`how many|who|which|paid|sample|asked|chosen|select|survey|compan|fund|evidence|source|where|question`],`For example: How many dentists were asked, who chose them, and were they paid by the company?`),
+one(()=>M(`A reviewer is paid by a restaurant to write about it. Why might this matter to a critical reader?`,[`The reviewer may be biased in the restaurant's favour`,`It makes the review more accurate`,`It has no effect on the review`,`It means the review is illegal`],`Payment can create a conflict of interest.`),
+()=>M(`A text uses the phrase "it is obvious that…" without giving evidence. A critical reader should…`,[`be suspicious, since claiming something is obvious is not proof`,`accept it immediately`,`assume the writer is an expert`,`ignore the rest of the text`],`Assertion is not the same as evidence.`),
+()=>M(`Comparing a claim against other sources to see if they agree is called…`,[`corroboration`,`exaggeration`,`generalisation`,`bias`],`Checking a claim against other evidence tests its reliability.`))],
+/* Very Difficult */[one(ex(`"Nine out of ten dentists recommend this toothpaste." Give one question a critical reader should ask about this claim.`,[`how many|who|which|paid|sample|asked|chosen|select|survey|compan|fund|evidence|source|where|question`],`For example: How many dentists were asked, who chose them, and were they paid by the company?`),
 ex(`A character in a 1930s novel uses language that is offensive today. Explain how context affects how we should read this.`,[`time|period|then|society|attitude|histor|context|accept|norm|differ|era|views`],`The language reflects the attitudes of its time. Understanding the context explains it without making it acceptable today, and the writer may even be criticising those attitudes.`),
 ex(`One reader sees the ending of a story as hopeful; another sees it as tragic. What must each reader do to justify their interpretation?`,[`evidence|quot|text|support|example|reference|justif|explain|proof|prove`],`Each must support their interpretation with evidence from the text, such as quotations, and explain how it leads to their reading.`)),
 one(()=>M(`"You can't trust her views on school meals; she isn't even a parent." What is wrong with this argument?`,[`It attacks the person instead of her argument`,`It uses too much evidence`,`It is too polite`,`It gives a statistic`],`Who makes a claim does not decide whether the claim is true.`),
@@ -40,6 +42,9 @@ one(()=>M(`"You can't trust her views on school meals; she isn't even a parent."
 one(()=>M(`A newspaper owned by an oil company reports that wind farms are "ugly and useless". A critical reader should consider…`,[`whether the owner's interests may have influenced the report`,`only the size of the headline`,`whether wind exists`,`nothing: newspapers are always neutral`],`Ownership and interests can create bias.`),
 ()=>M(`Which claim is supported by the strongest evidence?`,[`A claim backed by several independent studies`,`A claim backed by one person's story`,`A claim that "everyone knows"`,`A claim repeated many times online`],`Independent, repeated evidence is the most reliable.`),
 ()=>M(`To "evaluate" an argument means to…`,[`judge how convincing it is, weighing strengths and weaknesses`,`summarise it`,`copy it out`,`agree with it`],`Evaluation requires a reasoned judgement.`)),
-purT,
 one(rd(X2,`Which word shows that the researchers are being cautious about their explanation?`,[`"suggest"`,`"found"`,`"scored"`,`"started"`],`"Suggest" is tentative: they do not claim to have proved the cause.`),
-rd(X1,`Which word reveals the writer's biased attitude most clearly?`,[`"lazy"`,`"Saturday"`,`"schools"`,`"noon"`],`"Lazy" is a judgemental, emotive word.`))]]})();
+rd(X1,`Which word reveals the writer's biased attitude most clearly?`,[`"lazy"`,`"Saturday"`,`"schools"`,`"noon"`],`"Lazy" is a judgemental, emotive word.`)),
+one(()=>M(`A politician cites a single satisfied voter as proof that a policy works. What logical weakness does this share with "my neighbour's son sleeps late"?`,[`Both generalise from a single, unrepresentative example`,`Both use statistics`,`Both are objective`,`Both are irrelevant to the topic`],`A single case cannot prove a general claim.`),
+()=>M(`A study is funded by a company that benefits from its results. This alone means the study is…`,[`not necessarily wrong, but worth checking carefully for bias`,`definitely false`,`definitely true`,`irrelevant`],`Funding source is a reason for caution, not automatic proof of dishonesty.`),
+()=>M(`Which shows the most sophisticated evaluation of a source?`,[`Weighing the evidence, considering bias, and judging how far to trust it`,`Saying it is true because it is online`,`Saying it is false because you disagree`,`Repeating the claim without comment`],`Sophisticated evaluation weighs evidence and possible bias before judging.`))]
+]})();

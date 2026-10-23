@@ -8,14 +8,17 @@ S1=`Good morning, everyone. Today I want to tell you about our school garden. La
 S2=`Friends, we have a choice. We can walk past the litter, as we have always done. Or we can pick it up. One bottle. One wrapper. One street at a time. Which will you choose?`,
 S3=`Some people say that homework teaches discipline. I understand that view. But a tired pupil learns nothing. A recent survey found that seven in ten students do homework after nine at night. Is that discipline, or is it exhaustion?`;
 BANK.English['Speaking & listening']=[
-/* Easy */[mcDef(W1),mcTerm(W1),name(W1),
+/* Easy */[mcDef(W1),
+mcTerm(W1),
+name(W1),
 one(Q(`Listen to the talk. What is it about?`,[`the school garden`,`the school canteen menu`,`a football match`,`a school trip`],`The speaker says: "I want to tell you about our school garden."`,S1),
 Q(`Listen to the talk. How many volunteers helped?`,[`40`,`14`,`4`,`400`],`The speaker says "forty volunteers".`,S1),
 Q(`Listen to the talk. On which day does the garden supply the canteen?`,[`Friday`,`Monday`,`Wednesday`,`every day`],`The speaker says "every Friday".`,S1)),
 one(()=>M(`Which is good advice for giving a presentation?`,[`Look at your audience and speak clearly`,`Read every word from your notes without looking up`,`Speak as fast as you can`,`Face the board`],`Eye contact and clear speech keep the audience engaged.`),
 ()=>M(`A good listener in a group discussion…`,[`lets others finish and responds to what they said`,`interrupts to speak first`,`looks at their phone`,`repeats their own point louder`],`Listening and building on others' ideas makes a discussion work.`),
 ()=>M(`When speaking to the headteacher at a formal event, you should use…`,[`formal Standard English`,`slang`,`text-message abbreviations`,`a silly voice`],`You adapt your language to the audience and situation.`))],
-/* Moderate */[mcDef(W2),name(W2),
+/* Moderate */[mcDef(W2),
+name(W2),
 one(Q(`Listen to the speech. What is the speaker trying to persuade the audience to do?`,[`pick up litter`,`recycle bottles at home`,`walk to school`,`plant trees`],`"Or we can pick it up."`,S2),
 Q(`Listen to the speech. How does it end?`,[`with a question to the audience`,`with a statistic`,`with a joke`,`with a quotation`],`"Which will you choose?" speaks directly to the listeners.`,S2),
 Q(`Listen to the speech. Which technique is used in "One bottle. One wrapper. One street at a time."?`,[`repetition in a list of three`,`a simile`,`a statistic`,`an anecdote`],`"One" is repeated three times, building rhythm.`,S2)),
@@ -32,8 +35,7 @@ ex(`In a debate, what is a rebuttal?`,[`against|counter|respond|reply|answer|cha
 one(()=>M(`In drama, "hot-seating" helps actors to…`,[`explore a character's thoughts and motives`,`learn their lines faster`,`design the set`,`sell tickets`],`The actor answers questions in role.`),
 ()=>M(`A "freeze frame" in drama is…`,[`a still image showing a key moment`,`a very cold stage`,`a pause in the script`,`a type of spotlight`],`Actors hold a position, like a photograph.`),
 ()=>M(`When performing a monologue as an angry character, an actor might…`,[`use a louder voice, sharp gestures and a faster pace`,`whisper and stand perfectly still throughout`,`face away from the audience`,`read in a flat voice`],`Voice and movement are chosen to show the character's emotion.`))],
-/* Very Difficult */[
-one(Q(`Listen to the speech again. Why does the speaker say "I understand that view"?`,[`to seem fair before giving a counter-argument`,`to show agreement with homework`,`to end the speech`,`to introduce a story`],`Acknowledging the other side makes the speaker seem reasonable and the rebuttal stronger.`,S3),
+/* Very Difficult */[one(Q(`Listen to the speech again. Why does the speaker say "I understand that view"?`,[`to seem fair before giving a counter-argument`,`to show agreement with homework`,`to end the speech`,`to introduce a story`],`Acknowledging the other side makes the speaker seem reasonable and the rebuttal stronger.`,S3),
 Q(`Listen to the speech again. What is the effect of the final question, "Is that discipline, or is it exhaustion?"`,[`It challenges the audience to rethink the opposing view`,`It asks for information`,`It changes the subject`,`It shows the speaker is unsure`],`It is a rhetorical question that reframes the other side's key word.`,S3),
 Q(`Listen to the litter speech again. Why does the speaker use very short sentences?`,[`to create a strong, memorable rhythm`,`because the speaker is nervous`,`to save time`,`to confuse the audience`],`Short, punchy sentences are easy to hear and remember.`,S2)),
 one(ex(`Write an opening sentence for a speech to your year group arguing for a longer lunch break. Address the audience directly.`,[` you| we | our | us `],`How many of you have had to choose between eating lunch and seeing your friends?`,`Your sentence is checked for words that address the audience. Compare it with the model answer.`),
@@ -42,7 +44,7 @@ ex(`Explain how a speaker should adapt a talk about climate change for an audien
 one(()=>M(`Which is the strongest way to end a persuasive speech?`,[`a clear call to action that echoes your opening`,`"That's all I've got."`,`a new, unrelated point`,`an apology for speaking`],`A memorable ending tells the audience what to do or think.`),
 ()=>M(`During a debate, the other team makes a point you had not expected. The best response is to…`,[`listen carefully, note it and answer it directly in your rebuttal`,`ignore it`,`interrupt immediately`,`repeat your prepared speech unchanged`],`Good debaters respond to what is actually said.`),
 ()=>M(`A chair of a discussion should…`,[`make sure everyone has a fair chance to speak`,`give their own opinion the most`,`decide who is right before it starts`,`speak for most of the time`],`The chair manages the discussion fairly.`)),
-name(W2),
 one(()=>M(`Which shows active listening?`,[`summarising what the speaker said before replying`,`planning your own point while they talk`,`looking around the room`,`finishing their sentences for them`],`Summarising shows you have understood.`),
 ()=>M(`An actor speaks very quietly but can be heard at the back of the hall. This skill is…`,[`projection`,`improvisation`,`hot-seating`,`rebuttal`],`Projection is about clarity and carrying power, not shouting.`),
-()=>M(`In a formal presentation, slides should…`,[`show a few key words or images to support what you say`,`contain your whole script`,`be read out word for word`,`use as many colours and fonts as possible`],`Slides support the speaker; they do not replace the talk.`))]]})();
+()=>M(`In a formal presentation, slides should…`,[`show a few key words or images to support what you say`,`contain your whole script`,`be read out word for word`,`use as many colours and fonts as possible`],`Slides support the speaker; they do not replace the talk.`))]
+]})();

@@ -6,11 +6,14 @@ E1=`The year was 1666. Thomas pressed his sleeve to his mouth as he ran down Pud
 E2=`Inspector Hale studied the muddy footprints by the window. They led into the room, but not out. "Whoever took the necklace," she said quietly, "never left this house."`,
 E3=`Miss Crane smiled at the class, but her fingers tightened around the ruler until her knuckles turned white.`;
 BANK.English['Literary prose']=[
-/* Easy */[mcDef(W1),mcTerm(W1),name(W1),
+/* Easy */[mcDef(W1),
+mcTerm(W1),
+name(W1),
 one(()=>M(`A story told using "I" and "me" is written in the…`,[`first person`,`second person`,`third person`,`past tense`],`The narrator is a character in the story.`),
 ()=>M(`Which of these is a feature of detective fiction?`,[`a crime to be solved using clues`,`spaceships and aliens`,`talking animals`,`dragons and wizards`],`The reader follows the detective in working out who committed the crime.`),
 ()=>M(`Historical fiction is a story that is…`,[`set in a real period of the past`,`set in the future`,`always completely true`,`written long ago`],`The characters may be invented, but the period is real.`))],
-/* Moderate */[mcDef(W2),name(W2),
+/* Moderate */[mcDef(W2),
+name(W2),
 one(rd(E1,`What genre is this extract?`,[`historical fiction`,`science fiction`,`detective fiction`,`fantasy`],`It is set during a real event of the past, the Great Fire of London.`),
 rd(E1,`Which detail tells you most clearly when the story is set?`,[`"The year was 1666"`,`"the smoke stinging his eyes"`,`"he ran"`,`"a roaring wall of flame"`],`The date fixes the historical setting.`),
 rd(E1,`"a roaring wall of flame" is an example of…`,[`metaphor`,`simile`,`alliteration`,`dialogue`],`The fire is described as if it IS a wall, and "roaring" adds sound.`)),
@@ -29,10 +32,8 @@ ex(`What is the purpose of a red herring in a detective story?`,[`mislead|trick|
 ex(`How does a writer make a historical setting convincing?`,[`detail|object|clothes|language|event|research|food|transport|custom|accurate|real`],`By including accurate period details such as clothing, objects, transport, customs and real events of the time.`)),
 one(()=>M(`A storm breaks just as two characters begin to argue. This use of weather to reflect mood is called…`,[`pathetic fallacy`,`a red herring`,`an alibi`,`a flashback`],`The setting mirrors the characters' emotions.`),
 ()=>M(`A writer mentions a loose stair early in a story, and a character falls on it later. This is…`,[`foreshadowing`,`a flashback`,`a red herring`,`dialogue`],`The early detail hints at the later event.`),
-()=>M(`An object in a historical novel that could not have existed at that time is called…`,[`an anachronism`,`an alibi`,`an antagonist`,`an omniscient narrator`],`For example, a wristwatch in a story set in 1500.`)),
-name(W2)],
-/* Very Difficult */[
-one(ex(`"The house had been waiting for her; she was sure of it." Explain what this sentence suggests and how it makes the reader feel.`,[`alive|personif|watch|wait|human|living`,`uneas|tension|fear|threat|creep|suspense|sinister|scar|danger|nervous`],`The house is personified as if it were alive and expecting her, which creates an uneasy, threatening mood.`,null,{need:1}),
+()=>M(`An object in a historical novel that could not have existed at that time is called…`,[`an anachronism`,`an alibi`,`an antagonist`,`an omniscient narrator`],`For example, a wristwatch in a story set in 1500.`))],
+/* Very Difficult */[one(ex(`"The house had been waiting for her; she was sure of it." Explain what this sentence suggests and how it makes the reader feel.`,[`alive|personif|watch|wait|human|living`,`uneas|tension|fear|threat|creep|suspense|sinister|scar|danger|nervous`],`The house is personified as if it were alive and expecting her, which creates an uneasy, threatening mood.`,null,{need:1}),
 ex(`A detective story is narrated by the detective's friend, who is always one step behind. Explain why a writer might choose this narrator.`,[`reader|surprise|suspense|mystery|hidden|secret|guess|reveal|share|same`],`The reader knows only what the friend knows, so the detective's reasoning stays hidden and the solution is a surprise.`),
 ex(`Explain the difference between a theme and a plot.`,[`idea|message|about|meaning|issue`,`event|happen|sequence|action|story`],`The plot is the sequence of events; a theme is a big idea or message that the story explores, such as justice or loyalty.`,null,{need:1})),
 one(()=>M(`A novel opens with its final scene and then goes back to explain how events led there. This structure is called…`,[`a circular or non-linear narrative`,`a chronological narrative`,`a red herring`,`an omniscient narrative`],`Events are not told in time order.`),
@@ -40,4 +41,8 @@ one(()=>M(`A novel opens with its final scene and then goes back to explain how 
 ()=>M(`In a story set in Victorian London, a rich character steps over a sleeping beggar without noticing. The writer is most likely exploring the theme of…`,[`social inequality`,`friendship`,`space travel`,`sport`],`Details of setting and action can carry a theme.`)),
 one(rd(E2,`Why does the writer have the inspector speak "quietly"?`,[`It makes her words more chilling and controlled`,`She has a sore throat`,`She is unsure of herself`,`She is bored`],`A calm delivery of alarming news increases the tension.`),
 rd(E1,`Why does the writer open with a short sentence, "The year was 1666"?`,[`to establish the setting quickly and clearly`,`to describe Thomas`,`to create humour`,`to end the chapter`],`A short opening fixes time and place before the action begins.`)),
-mcDef(W2)]]})();
+ex(`A writer delays revealing the narrator's name and appearance until halfway through the novel. Suggest two possible reasons for this choice.`,[`identif|relate|universal|mystery|withhold|focus|judge|assume|surpris`],`Readers may be encouraged to identify with the narrator before learning details that could make them judge the character, or the delay could build mystery about who is telling the story.`),
+one(()=>M(`A novel's final chapter deliberately echoes the opening chapter's setting. This structural choice is called…`,[`a circular structure`,`a red herring`,`an epilogue`,`a prologue`],`Returning to the opening creates a sense of completion or change.`),
+()=>M(`A narrator describes events but admits "I may be misremembering." This admission mainly…`,[`makes the reader question the reliability of the account`,`proves the narrator is lying`,`has no effect on the reader`,`shows the narrator is the antagonist`],`Doubt planted by the narrator unsettles the reader's trust.`),
+()=>M(`Why might a writer choose to reveal a twist through a minor character's remark rather than the narrator stating it directly?`,[`It feels more natural and rewards attentive readers`,`It is a mistake in the writing`,`It makes the twist less important`,`It is required in all novels`],`Subtle reveals feel earned rather than announced.`))]
+]})();
