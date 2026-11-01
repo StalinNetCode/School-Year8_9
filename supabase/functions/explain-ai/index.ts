@@ -136,9 +136,11 @@ function makeProviders(env: (k: string) => string): Provider[] {
 const handler = async (req: Request): Promise<Response> => {
   const cors = corsFor(req);
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  const env = (k: string) => Deno.env.get(k) ?? '';
+  // Status page: open the function's address in a browser to see which keys it can find (never shows the keys themselves)
+  if (req.method === 'GET') return json({ gemini: !!env('GEMINI_API_KEY'), groq: !!env('GROQ_API_KEY'), anthropic: !!env('ANTHROPIC_API_KEY') }, 200, cors);
   if (req.method !== 'POST') return json({ error: 'method' }, 405, cors);
 
-  const env = (k: string) => Deno.env.get(k) ?? '';
   const providers = makeProviders(env);
   if (!providers.length) return json({ error: 'not_configured' }, 503, cors);
 
