@@ -79,9 +79,10 @@ function makeProviders(env: (k: string) => string): Provider[] {
   if (env('GEMINI_API_KEY')) {
     list.push(async (prompt, signal) => {
       // Google retires models often, so try the newest known name, then its always-current alias
-      const models = [env('GEMINI_MODEL') || 'gemini-3.8-flash', 'gemini-flash-latest'];
+      const models = [...new Set([env('GEMINI_MODEL') || 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'])];
       let last = '';
-      for (const model of models) {
+      for (const model of models) for (let attempt = 0; attempt < 2; attempt++) {
+        if (attempt) await new Promise((res) => setTimeout(res, 1200)); // one quick retry when Google is busy
         const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
           method: 'POST', signal,
           headers: { 'x-goog-api-key': env('GEMINI_API_KEY'), 'content-type': 'application/json' },
@@ -91,12 +92,12 @@ function makeProviders(env: (k: string) => string): Provider[] {
             generationConfig: { maxOutputTokens: 2000, temperature: 0.4 },
           }),
         });
-        if (!r.ok) { last = `gemini ${model} ${r.status} ${(await r.text()).slice(0, 400)}`; console.error('explain-ai provider failed:', last); continue; }
+        if (!r.ok) { last = `gemini ${model} ${r.status} ${(await r.text()).slice(0, 400)}`; console.error('explain-ai provider failed:', last); if (r.status === 503 || r.status === 429) continue; break; }
         const d = await r.json();
         const parts = d?.candidates?.[0]?.content?.parts;
         const text = (Array.isArray(parts) ? parts : []).map((p: { text?: string }) => p.text ?? '').join('\n');
         if (text.trim()) return text;
-        last = `gemini ${model} returned no text`;
+        last = `gemini ${model} returned no text`; break;
       }
       throw new Error(last);
     });
