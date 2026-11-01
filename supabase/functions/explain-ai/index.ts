@@ -7,7 +7,7 @@
    3. The AI writes the explanation. If that fails, the student's allowance is given back.
 
    Secrets (Supabase > Project Settings > Edge Functions > Secrets). Set at least one key; they are tried in this order:
-     GEMINI_API_KEY     free tier, from Google AI Studio (optional GEMINI_MODEL, default gemini-2.5-flash)
+     GEMINI_API_KEY     free tier, from Google AI Studio (optional GEMINI_MODEL, default gemini-3.8-flash)
      GROQ_API_KEY       free tier, from console.groq.com (optional GROQ_MODEL, default openai/gpt-oss-120b)
      ANTHROPIC_API_KEY  paid (optional AI_MODEL, default claude-haiku-5-5)
      AI_DAILY_LIMIT     optional, per-student explanations per 24 hours, default 40
@@ -78,20 +78,27 @@ function makeProviders(env: (k: string) => string): Provider[] {
   const list: Provider[] = [];
   if (env('GEMINI_API_KEY')) {
     list.push(async (prompt, signal) => {
-      const model = env('GEMINI_MODEL') || 'gemini-2.5-flash';
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: 'POST', signal,
-        headers: { 'x-goog-api-key': env('GEMINI_API_KEY'), 'content-type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM }] },
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 2000, temperature: 0.4 },
-        }),
-      });
-      if (!r.ok) throw new Error('gemini ' + r.status + ' ' + (await r.text()).slice(0, 400));
-      const d = await r.json();
-      const parts = d?.candidates?.[0]?.content?.parts;
-      return (Array.isArray(parts) ? parts : []).map((p: { text?: string }) => p.text ?? '').join('\n');
+      // Google retires models often, so try the newest known name, then its always-current alias
+      const models = [env('GEMINI_MODEL') || 'gemini-3.8-flash', 'gemini-flash-latest'];
+      let last = '';
+      for (const model of models) {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+          method: 'POST', signal,
+          headers: { 'x-goog-api-key': env('GEMINI_API_KEY'), 'content-type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM }] },
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 2000, temperature: 0.4 },
+          }),
+        });
+        if (!r.ok) { last = `gemini ${model} ${r.status} ${(await r.text()).slice(0, 400)}`; console.error('explain-ai provider failed:', last); continue; }
+        const d = await r.json();
+        const parts = d?.candidates?.[0]?.content?.parts;
+        const text = (Array.isArray(parts) ? parts : []).map((p: { text?: string }) => p.text ?? '').join('\n');
+        if (text.trim()) return text;
+        last = `gemini ${model} returned no text`;
+      }
+      throw new Error(last);
     });
   }
   if (env('GROQ_API_KEY')) {
