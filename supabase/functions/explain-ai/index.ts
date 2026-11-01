@@ -4,12 +4,13 @@
    1. The portal sends the question, the correct answer, the student's answer and the student's name and PIN.
    2. The database function portal_ai_check (callable only by this backend) checks the PIN, applies the sign-in lockout
       and allows 40 explanations per student per 24 hours.
-   3. Claude writes the explanation. If that fails, the student's allowance is given back.
+   3. The AI writes the explanation. If that fails, the student's allowance is given back.
 
-   Secrets (Supabase > Project Settings > Edge Functions > Secrets):
-     ANTHROPIC_API_KEY  required
-     AI_MODEL           optional, default claude-haiku-5-5
-     AI_DAILY_LIMIT     optional, default 40
+   Secrets (Supabase > Project Settings > Edge Functions > Secrets). Set at least one key; they are tried in this order:
+     GEMINI_API_KEY     free tier, from Google AI Studio (optional GEMINI_MODEL, default gemini-2.5-flash)
+     GROQ_API_KEY       free tier, from console.groq.com (optional GROQ_MODEL, default openai/gpt-oss-120b)
+     ANTHROPIC_API_KEY  paid (optional AI_MODEL, default claude-haiku-5-5)
+     AI_DAILY_LIMIT     optional, per-student explanations per 24 hours, default 40
    The student's name is never sent to the AI; only the question content is. */
 
 const ORIGINS = ['https://school-year8-9.sklss.co.uk', 'https://stalinnetcode.github.io'];
@@ -70,14 +71,76 @@ Working from the quiz: ${clip(b.steps, 1200) || '(none)'}
 Please explain this question to the student.`;
 }
 
+// Providers are tried in this order, using whichever keys are set. Gemini and Groq both have free tiers.
+type Provider = (prompt: string, signal: AbortSignal) => Promise<string>;
+
+function makeProviders(env: (k: string) => string): Provider[] {
+  const list: Provider[] = [];
+  if (env('GEMINI_API_KEY')) {
+    list.push(async (prompt, signal) => {
+      const model = env('GEMINI_MODEL') || 'gemini-2.5-flash';
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST', signal,
+        headers: { 'x-goog-api-key': env('GEMINI_API_KEY'), 'content-type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM }] },
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 2000, temperature: 0.4 },
+        }),
+      });
+      if (!r.ok) throw new Error('gemini');
+      const d = await r.json();
+      const parts = d?.candidates?.[0]?.content?.parts;
+      return (Array.isArray(parts) ? parts : []).map((p: { text?: string }) => p.text ?? '').join('\n');
+    });
+  }
+  if (env('GROQ_API_KEY')) {
+    list.push(async (prompt, signal) => {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST', signal,
+        headers: { Authorization: `Bearer ${env('GROQ_API_KEY')}`, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: env('GROQ_MODEL') || 'openai/gpt-oss-120b',
+          max_completion_tokens: 2000,
+          temperature: 0.4,
+          messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: prompt }],
+        }),
+      });
+      if (!r.ok) throw new Error('groq');
+      const d = await r.json();
+      return String(d?.choices?.[0]?.message?.content ?? '');
+    });
+  }
+  if (env('ANTHROPIC_API_KEY')) {
+    list.push(async (prompt, signal) => {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', signal,
+        headers: { 'x-api-key': env('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: env('AI_MODEL') || 'claude-haiku-5-5',
+          max_tokens: 900,
+          system: SYSTEM,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      if (!r.ok) throw new Error('anthropic');
+      const d = await r.json();
+      return (Array.isArray(d.content) ? d.content : [])
+        .filter((p: { type?: string }) => p.type === 'text')
+        .map((p: { text?: string }) => p.text ?? '').join('\n');
+    });
+  }
+  return list;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   const cors = corsFor(req);
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   if (req.method !== 'POST') return json({ error: 'method' }, 405, cors);
 
   const env = (k: string) => Deno.env.get(k) ?? '';
-  const apiKey = env('ANTHROPIC_API_KEY');
-  if (!apiKey) return json({ error: 'not_configured' }, 503, cors);
+  const providers = makeProviders(env);
+  if (!providers.length) return json({ error: 'not_configured' }, 503, cors);
 
   let b: Record<string, unknown>;
   try {
@@ -116,48 +179,25 @@ const handler = async (req: Request): Promise<Response> => {
   if (status === 'limit') return json({ error: 'limit', limit }, 429, cors);
   if (status !== 'ok') return json({ error: 'server' }, 502, cors);
 
-  // 2. ask Claude; give the allowance back if that fails
+  // 2. ask the AI (first provider that works); give the allowance back if none does
   const refund = async () => {
     try {
       await fetch(`${base}/rest/v1/ai_usage?id=eq.${chk.usage_id}`, { method: 'DELETE', headers: dbHeaders });
     } catch { /* nothing more to do */ }
   };
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 25000);
-  try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      signal: ctl.signal,
-      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: env('AI_MODEL') || 'claude-haiku-5-5',
-        max_tokens: 900,
-        system: SYSTEM,
-        messages: [{ role: 'user', content: buildPrompt(b) }],
-      }),
-    });
-    if (!r.ok) {
-      await refund();
-      return json({ error: 'ai_failed' }, 502, cors);
+  const prompt = buildPrompt(b);
+  for (const p of providers) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 15000);
+    try {
+      const text = (await p(prompt, ctl.signal)).trim().slice(0, 4000);
+      if (text) return json({ text, left: Math.max(0, limit - (chk.used ?? 0)) }, 200, cors);
+    } catch { /* try the next provider */ } finally {
+      clearTimeout(timer);
     }
-    const data = await r.json();
-    const text = (Array.isArray(data.content) ? data.content : [])
-      .filter((p: { type?: string }) => p.type === 'text')
-      .map((p: { text?: string }) => p.text ?? '')
-      .join('\n')
-      .trim()
-      .slice(0, 4000);
-    if (!text) {
-      await refund();
-      return json({ error: 'ai_failed' }, 502, cors);
-    }
-    return json({ text, left: Math.max(0, limit - (chk.used ?? 0)) }, 200, cors);
-  } catch {
-    await refund();
-    return json({ error: 'ai_failed' }, 502, cors);
-  } finally {
-    clearTimeout(timer);
   }
+  await refund();
+  return json({ error: 'ai_failed' }, 502, cors);
 };
 
 Deno.serve(handler);
