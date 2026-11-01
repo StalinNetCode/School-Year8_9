@@ -13,6 +13,7 @@
    Each question allows one attempt: Check Answer is final and shows the answer and steps if it was wrong. Explain unlocks afterwards and adds the reasoning.
    The dashboard gains a Redeem Puppies section: total earned, balance and redeemed are shown, with links to share a redemption.
    Sign-in (A.go) is replaced here so that a student who was given a temporary PIN by the admin must choose their own PIN first.
+   Explain with AI (aiMount, A.ai) asks the explain-ai backend function for a step-by-step explanation once a question is finished.
    A subject that is not already in the portal's subject list (such as Biology) is added to the list automatically. ---------- */
 const N=(q,a,u,m,w)=>({q,a,d:`${f(a)}${u?' '+u:''}`,m,w,k:'nm'});
 const M=(q,o,m)=>{const c=o[0],opts=shuf(o.slice()),ci=opts.indexOf(c),L='ABCD'[ci];return{q,a:`${L}) ${c}`,d:`${L}) ${c}`,m,w:`The correct option is ${L}: ${c}.`,k:'mc',opts,ci}};
@@ -65,7 +66,7 @@ if(h.textContent=='Correction')pn.querySelectorAll('p').forEach(p=>{const t=p.qu
 if(h.textContent=='Correction'){const n=[...pn.querySelectorAll('p.mu')].find(p=>/using Correction/.test(p.textContent));if(n)n.textContent='No Puppies are awarded for this question.'}
 else if(h.textContent=='Explain'){const p=String(q.w||'').split(/;\s+/).filter(Boolean),x=q.k=='nm'&&EXPL[xk(q.m)];pn.innerHTML=`<h3>Explain</h3><p><b>The idea behind it:</b> ${q.m}</p><p><b>How the steps work:</b></p>${x&&x.length==p.length?`<ol>${p.map((s,i)=>`<li><b>${s}</b><br>${x[i]}</li>`).join('')}</ol>`:st(q.w)}<p><b>So the answer is:</b> ${esc(ans(q))}</p>`}})}
 document.head.insertAdjacentHTML('beforeend','<style>button[data-a=exp]:disabled{opacity:.4;cursor:not-allowed}.pn ol{margin:.3em 0 .6em;padding-left:1.4em}.pn li{margin:.25em 0}</style>');
-const render1=render;render=function(){if(S.v=='test'&&S.t){const q=S.t.qs[S.t.i];if(q&&!exOpen(q))q.showEx=false}render1();sxMount();bkMount();rdMount();exMount()};
+const render1=render;render=function(){if(S.v=='test'&&S.t){const q=S.t.qs[S.t.i];if(q&&!exOpen(q))q.showEx=false}render1();sxMount();bkMount();rdMount();exMount();aiMount()};
 const chk0=A.chk,exp0=A.exp;
 Object.assign(A,{async go(){if(S.busy)return;const n=$('#nm').value.trim(),p=$('#pn').value.trim(),s=$('#sb').value,pk=/^\d{4,8}$/.test(p),er=m=>{const e=$('#er');if(e)e.textContent=m};if(!n||!pk||!s){er(!n?'Enter your name to continue.':!pk?'Enter your PIN (4 to 8 digits).':'Select a subject to continue.');return}
 S.name=n;S.pin=p;S.ok=false;S.subj=s;S.busy=1;er('Signing in…');
@@ -80,6 +81,11 @@ async redeem(){if(S.busy)return;const B=Math.max(0,rdTot()-RD.r),E=m=>{const e=$
 const a=prompt(`You have ${pups(B)} to redeem.\n\nHow many Puppies would you like to redeem?`);if(a===null)return;const n=+a.trim();if(!/^\d+$/.test(a.trim())||n<1||n>B)return E(`Enter a whole number from 1 to ${B}.`);
 const nt=prompt(`Press OK to redeem ${pups(n)}, or Cancel to stop. This cannot be undone.\n\nYou can also type what you are redeeming them for:`);if(nt===null)return;S.busy=1;E('Redeeming…');
 try{if(pend().length){const s=await sync(pend());if(s.status=='ok')take(s)}const j=await rdCall(n,nt.trim());S.busy=0;if(j.status=='ok'){rdTake(j);RD.sh=RD.l.find(r=>r.id==j.new_id)||RD.l[0];render()}else E(j.status=='too_many'?`You can redeem up to ${j.earned-j.redeemed} right now. Try again.`:'Could not redeem. Sign out, sign in again and try once more.')}catch(e){S.busy=0;E('Could not reach the server. Check the internet connection and try again.')}},
+async ai(){const q=S.t&&S.t.qs[S.t.i];if(!q||!exOpen(q)||(q.ai&&(q.ai.s=='load'||q.ai.s=='ok')))return;q.ai={s:'load'};render();
+try{const x=await fetch(SB+'/functions/v1/explain-ai',{method:'POST',headers:{'Content-Type':'application/json',apikey:SK,Authorization:'Bearer '+SK},body:JSON.stringify({name:S.name,pin:S.pin,subject:S.subj,topic:q.topic,difficulty:DIFF[S.diff],question:plainTx(q.q),options:q.opts?q.opts.map(plainTx):undefined,correctAnswer:plainTx(ans(q)),studentAnswer:q.last||'',wasCorrect:!!q.ok,method:plainTx(q.m),steps:plainTx(q.w)})});
+let j={};try{j=await x.json()}catch(e){}
+q.ai=x.ok&&j.text?{s:'ok',text:j.text,left:j.left}:{s:'err',msg:AIERR[j.error]||AIERR.ai_failed}}catch(e){q.ai={s:'err',msg:'Could not reach the AI tutor. Check the internet connection and try again.'}}
+if(S.v=='test'&&S.t)render()},
 rdpick(v){RD.sh=RD.l[+v];render()},
 rdshare(){try{navigator.share({text:rdMsg(RD.sh)}).catch(()=>{})}catch(e){}},
 rdcopy(){const t=rdMsg(RD.sh),E=m=>{const e=$('#rde');if(e)e.textContent=m};try{navigator.clipboard.writeText(t).then(()=>E('Message copied.'),()=>prompt('Copy this message:',t))}catch(e){prompt('Copy this message:',t)}},
@@ -89,6 +95,23 @@ cor(){},
 chk(){const q=S.t.qs[S.t.i];if(q.done)return;cap();if(!q.last){if(confirm('You have not typed an answer.\n\nPress OK to see the correct answer (no Puppies for this question), or Cancel to go back and answer it.'))fin(q);return}
 if(!q.k){chk0();if(!q.done&&/^Incorrect/.test(q.fb||''))fin(q);return}
 const g=mark(q,q.last);if(g.ok){q.ok=q.done=true;q.pts=PUP[S.diff];S.t.pup+=q.pts;q.fb=`Correct! 🎉 +${q.pts} ${q.pts>1?'Puppies':'Puppy'} 🐶`;cheer()}else if(g.soft){q.ok=false;q.fb=g.fb}else return fin(q);render()}});
+/* ---------- Explain with AI. Sends the question, the correct answer and the student's answer to the backend function explain-ai, which checks the
+   student's PIN, limits use to 40 a day and asks Claude for a step-by-step explanation. The button unlocks when the answer is final, like Explain,
+   so it can never give the answer away before the attempt. The reply is escaped first and then formatted, so it can never inject HTML. ---------- */
+const AIERR={not_configured:'AI explanations are not switched on yet. Ask your teacher or parent to switch them on.',auth:'Your sign-in was not accepted. Sign out, sign in again, then try once more.',locked:'Too many wrong PINs. Wait 5 minutes, then try again.',change_pin:'Choose your own PIN first, then try again.',limit:'You have used all of today\'s AI explanations. They come back within 24 hours. The Explain button still works.',ai_failed:'The AI tutor could not answer just now. Try again in a moment.'};
+const plainTx=v=>String(v==null?'':v).replace(/<sup>(.*?)<\/sup>/gi,'^$1').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+const aiHtml=t=>{let o='',list=null;const close=()=>{if(list){o+=`</${list}>`;list=null}},b=x=>x.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+esc(t).split(/\n+/).forEach(l=>{l=l.trim();if(!l)return;let m;
+if(m=l.match(/^#{1,4}\s*(.+)$/)){close();o+=`<h4>${b(m[1])}</h4>`}
+else if(m=l.match(/^\d+[.)]\s+(.+)$/)){if(list!='ol'){close();o+='<ol>';list='ol'}o+=`<li>${b(m[1])}</li>`}
+else if(m=l.match(/^[-•*]\s+(.+)$/)){if(list!='ul'){close();o+='<ul>';list='ul'}o+=`<li>${b(m[1])}</li>`}
+else{close();o+=`<p>${b(l)}</p>`}});close();return o};
+function aiMount(){if(S.v!='test'||!S.t)return;const q=S.t.qs[S.t.i],b=$('#app [data-a=exp]');if(!b)return;const open=exOpen(q),busy=q.ai&&q.ai.s=='load';
+b.insertAdjacentHTML('afterend',`<button class=g data-a=ai ${open&&!busy&&!(q.ai&&q.ai.s=='ok')?'':'disabled'} title="${open?'Get a step-by-step explanation from an AI tutor':'Available after you check your answer'}">Explain with AI</button>`);
+if(!q.ai)return;const card=b.closest('.card')||$('#app .card'),a=[...card.querySelectorAll('.pn')].pop()||card.querySelector('.fb')||b.parentElement;
+const body=q.ai.s=='load'?'<p class=mu>Your AI tutor is writing a step-by-step explanation…</p>':q.ai.s=='ok'?`<div class=aitx>${aiHtml(q.ai.text)}</div><p class=mu>Written by AI to help you learn. Check it against your lesson notes.${q.ai.left!=null?` ${q.ai.left} AI explanations left today.`:''}</p>`:`<p class=bad role=alert>${esc(q.ai.msg)}</p>`;
+a.insertAdjacentHTML('afterend',`<div class=pn role=region aria-live=polite><h3>Explain with AI</h3>${body}</div>`)}
+document.head.insertAdjacentHTML('beforeend','<style>button[data-a=ai]:disabled{opacity:.4;cursor:not-allowed}.aitx h4{margin:.9em 0 .25em;font-size:1rem}.aitx p,.aitx li{margin:.3em 0}.aitx ol,.aitx ul{margin:.3em 0;padding-left:1.4em}</style>');
 const G10=`Use g = 10 N/kg.`;
 const LOAD={Physics:['forces','energy','electricity','magnetism','waves','matter','space','skills','explain'],Chemistry:['particles','atoms','mixtures','reactions','acids','periodic','energy','materials','earth','skills','explain'],Biology:['cells','transport','photosynthesis','respiration','digestion','reproduction','ecosystems','health','genetics','evolution','skills'],Spanish:['core','identity','freetime','school','travel','future','home','food','culture','environment','society','communication','grammar','vocabulary','practical'],English:['core','poetry','shakespeare','media','prose','creative','reading','writing','grammar','techniques','comparison','critical','speaking']};
 for(const sj in LOAD){BANK[sj]={};if(!SUBJ.includes(sj))SUBJ.splice(SUBJ.indexOf('Chemistry')+1,0,sj);LOAD[sj].forEach(u=>{const s=document.createElement('script');s.src=sj.toLowerCase()+'/'+u+'.js';s.async=false;document.head.append(s)})}
