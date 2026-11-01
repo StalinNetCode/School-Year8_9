@@ -88,7 +88,7 @@ function makeProviders(env: (k: string) => string): Provider[] {
           generationConfig: { maxOutputTokens: 2000, temperature: 0.4 },
         }),
       });
-      if (!r.ok) throw new Error('gemini');
+      if (!r.ok) throw new Error('gemini ' + r.status + ' ' + (await r.text()).slice(0, 400));
       const d = await r.json();
       const parts = d?.candidates?.[0]?.content?.parts;
       return (Array.isArray(parts) ? parts : []).map((p: { text?: string }) => p.text ?? '').join('\n');
@@ -106,7 +106,7 @@ function makeProviders(env: (k: string) => string): Provider[] {
           messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: prompt }],
         }),
       });
-      if (!r.ok) throw new Error('groq');
+      if (!r.ok) throw new Error('groq ' + r.status + ' ' + (await r.text()).slice(0, 400));
       const d = await r.json();
       return String(d?.choices?.[0]?.message?.content ?? '');
     });
@@ -123,7 +123,7 @@ function makeProviders(env: (k: string) => string): Provider[] {
           messages: [{ role: 'user', content: prompt }],
         }),
       });
-      if (!r.ok) throw new Error('anthropic');
+      if (!r.ok) throw new Error('anthropic ' + r.status + ' ' + (await r.text()).slice(0, 400));
       const d = await r.json();
       return (Array.isArray(d.content) ? d.content : [])
         .filter((p: { type?: string }) => p.type === 'text')
@@ -194,7 +194,7 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       const text = (await p(prompt, ctl.signal)).trim().slice(0, 4000);
       if (text) return json({ text, left: Math.max(0, limit - (chk.used ?? 0)) }, 200, cors);
-    } catch { /* try the next provider */ } finally {
+    } catch (e) { console.error('explain-ai provider failed:', String(e)); /* try the next provider */ } finally {
       clearTimeout(timer);
     }
   }
